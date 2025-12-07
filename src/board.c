@@ -90,6 +90,9 @@ board_init(void)
 	cfg.apb1lenr = APB1LENSR_UART5ENS | APB1LENSR_USART2ENS;
 	cfg.apb1lenr |= APB1LENSR_TIM2ENS;
 	cfg.apb2enr = APB2ENSR_USART1EN | APB2ENSR_TIM1ENS;
+	cfg.apb5enr = AHB5ENSR_LTDCEN | AHB5ENSR_DCMIPPENS;
+	cfg.apb5enr |= AHB5ENSR_GFXTIMENS | AHB5ENSR_VENCENS;
+	cfg.apb5enr |= AHB5ENSR_CSIENS;
 
 	/* RCC */
 	stm32n6_rcc_init(&rcc_sc, RCC_BASE);
