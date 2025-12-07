@@ -108,7 +108,7 @@ board_init(void)
 	*(uint32_t *)0xe000ed08 = 0x34180000; /* Setup vtor */
 
 	/* TIMER */
-	stm32f4_timer_init(&timer_sc, TIM1_BASE, 32000000);
+	stm32f4_timer_init(&timer_sc, TIM1_BASE, 64000000);
 	mdx_intc_setup(&dev_nvic, 115, stm32f4_timer_intr, &timer_sc);
 	mdx_intc_enable(&dev_nvic, 115);
 

@@ -43,6 +43,7 @@ main(void)
 	while (1) {
 		printf("%s: Hello World from n6\n", __func__);
 		mdx_usleep(500000);
+		mdx_usleep(500000);
 	}
 
 	return (0);
