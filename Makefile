@@ -35,7 +35,7 @@ flash:
 erase_all:
 	~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG reset=HWrst -el ~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/ExternalLoader/MX66UW1G45G_STM32N6570-DK.stldr -e all
 
-gdb:
+run:
 	gdb-multiarch ./obj/${APP}.elf
 
 gdb-server:
