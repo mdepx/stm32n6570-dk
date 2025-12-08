@@ -12,6 +12,7 @@ OSDIR =		mdepx
 all:
 	python3 -B ${OSDIR}/tools/emitter.py -j mdepx.conf
 	@${OBJCOPY} -O binary obj/${APP}.elf obj/${APP}.bin
+	${CROSS_COMPILE}size -x obj/${APP}.elf
 
 readelf:
 	${CROSS_COMPILE}readelf -a obj/${APP}.elf | less
