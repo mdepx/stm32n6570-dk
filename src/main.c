@@ -40,6 +40,10 @@ int
 main(void)
 {
 
+	pin_set(&gpio_sc, PORT_E, 1, 1); /* NRST */
+	pin_set(&gpio_sc, PORT_Q, 3, 1); /* LCD_ON/OFF */
+	pin_set(&gpio_sc, PORT_Q, 6, 1); /* LCD_BL_CTRL */
+
 	while (1) {
 		printf("%s: Hello World from n6\n", __func__);
 		mdx_usleep(500000);
