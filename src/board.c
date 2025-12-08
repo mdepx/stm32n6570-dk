@@ -76,6 +76,43 @@ static const struct stm32_gpio_pin uart_pins[] = {
 	{ PORT_E, 6, MODE_ALT, 7, OT_PP, OS_H, FLOAT }, /* VCP USART1_RX */
 	{ PORT_D, 5, MODE_ALT, 7, OT_PP, OS_H, FLOAT }, /* D1 USART2_TX */
 	{ PORT_F, 6, MODE_ALT, 7, OT_PP, OS_H, FLOAT }, /* D0 USART2_RX */
+
+	{ PORT_G,  0, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R0 */
+	{ PORT_D,  9, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R1 */
+	{ PORT_D, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R2 */
+	{ PORT_B,  4, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R3 */
+	{ PORT_H,  4, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R4 */
+	{ PORT_A, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R5 */
+	{ PORT_G, 11, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R6 */
+	{ PORT_D,  8, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R7 */
+
+	{ PORT_G, 12, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G0 */
+	{ PORT_G,  1, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G1 */
+	{ PORT_A,  1, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G2 */
+	{ PORT_A,  0, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G3 */
+	{ PORT_B, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G4 */
+	{ PORT_B, 12, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G5 */
+	{ PORT_B, 11, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G6 */
+	{ PORT_G,  8, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G7 */
+
+	{ PORT_G, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B0 */
+	{ PORT_A,  7, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B1 */
+	{ PORT_B,  2, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B2 */
+	{ PORT_G,  6, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B3 */
+	{ PORT_H,  3, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B4 */
+	{ PORT_H,  6, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B5 */
+	{ PORT_A,  8, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B6 */
+	{ PORT_A,  2, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B7 */
+
+	{ PORT_G, 13, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* LCD_DE */
+	{ PORT_Q,  3, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* LCD_ON/OFF */
+	{ PORT_B, 14, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* LCD_HSYNC */
+	{ PORT_E, 11, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* LCD_VSYNC */
+	{ PORT_B, 13, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* LCD_CLK */
+	{ PORT_Q,  4, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* LCD_INT */
+	{ PORT_Q,  6, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* LCD_BL_CTRL */
+	{ PORT_E,  1, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* NRST */
+
 	PINS_END
 };
 
