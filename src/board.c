@@ -43,6 +43,7 @@ static struct stm32l4_usart_softc usart_sc;
 static struct stm32f4_timer_softc timer_sc;
 
 struct stm32f4_gpio_softc gpio_sc;
+struct stm32f4_ltdc_softc ltdc_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
@@ -152,6 +153,8 @@ board_init(void)
 	stm32f4_timer_init(&timer_sc, TIM1_BASE, 64000000);
 	mdx_intc_setup(&dev_nvic, 115, stm32f4_timer_intr, &timer_sc);
 	mdx_intc_enable(&dev_nvic, 115);
+
+	stm32f4_ltdc_init(&ltdc_sc, LTDC_BASE);
 
 #if 0
 	malloc_init();
