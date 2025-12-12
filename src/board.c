@@ -186,8 +186,11 @@ board_init(void)
 	mdx_intc_setup(&dev_nvic, 115, stm32f4_timer_intr, &timer_sc);
 	mdx_intc_enable(&dev_nvic, 115);
 
-	/* PSRAM */
+	/* Switch and enable power for PSRAM. */
 	stm32n6_pwr_init(&pwr_sc, PWR_BASE);
+	stm32n6_pwr_setup_vddio23_1v8(&pwr_sc);
+
+	/* PSRAM */
 	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
 	stm32n6_xspi_setup(&xspi1_sc, NULL);
 
