@@ -48,8 +48,8 @@ main(void)
 
 	k = 64;
 	k = 2048;
-	addr = 0x91000000;
 	addr = 0x34200000;
+	addr = 0x90000000;
 
 	for (i = 0; i <= k; i += 4)
 		*(uint32_t *)(addr + i) = i;
@@ -61,8 +61,8 @@ main(void)
 
 #if 1
 	uint32_t base;
-	base = 0x90000000;
 	base = 0x34200000;
+	base = 0x90000000;
 #if 0
 	for (i = 0; i < (480 * 800 * 3); i += 3) {
 		*(uint8_t *)(base + i + 0) = 0xff;
@@ -77,9 +77,12 @@ main(void)
 			flag = 0;
 		else
 			flag = 0xff;
-#if 0
+#if 1
 		for (i = 0; i < (480 * 800 * 4); i += 4)
-			*(uint32_t *)(base + i) = 0xffffff00 | flag;
+			if (flag)
+				*(uint32_t *)(base + i) = 0xdddddddd;
+			else
+				*(uint32_t *)(base + i) = 0x0;
 #else
 		for (i = 0; i < (480 * 800 * 3); i += 3) {
 			*(uint8_t *)(base + i + 0) = flag;
