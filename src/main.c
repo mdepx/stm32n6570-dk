@@ -39,15 +39,72 @@ extern struct stm32f4_gpio_softc gpio_sc;
 int
 main(void)
 {
+	int i __unused;
 
-	pin_set(&gpio_sc, PORT_E, 1, 1); /* NRST */
-	pin_set(&gpio_sc, PORT_Q, 3, 1); /* LCD_ON/OFF */
-	pin_set(&gpio_sc, PORT_Q, 6, 1); /* LCD_BL_CTRL */
+#if 1
+	uint32_t addr;
+	int k;
+	printf("reading xspi1 val\n");
+
+	k = 64;
+	k = 2048;
+	addr = 0x91000000;
+	addr = 0x34200000;
+
+	for (i = 0; i <= k; i += 4)
+		*(uint32_t *)(addr + i) = i;
+	for (i = k; i >= 0; i -= 4)
+		printf("xspi1 %d val %d\n", i, *(uint32_t *)(addr + i));
+
+	printf("ok\n");
+#endif
+
+#if 1
+	uint32_t base;
+	base = 0x90000000;
+	base = 0x34200000;
+#if 0
+	for (i = 0; i < (480 * 800 * 3); i += 3) {
+		*(uint8_t *)(base + i + 0) = 0xff;
+		*(uint8_t *)(base + i + 1) = 0x00;
+		*(uint8_t *)(base + i + 2) = 0x00;
+	}
+#else
+	int flag = 0;
+
+	while (1) {
+		if (flag == 0xff)
+			flag = 0;
+		else
+			flag = 0xff;
+#if 0
+		for (i = 0; i < (480 * 800 * 4); i += 4)
+			*(uint32_t *)(base + i) = 0xffffff00 | flag;
+#else
+		for (i = 0; i < (480 * 800 * 3); i += 3) {
+			*(uint8_t *)(base + i + 0) = flag;
+			*(uint8_t *)(base + i + 1) = 0x00;
+			*(uint8_t *)(base + i + 2) = 0x00;
+		}
+#endif
+	}
+#endif
+#endif
+
+	pin_set(&gpio_sc, PORT_E,  1, 1); /* NRST */
+	pin_set(&gpio_sc, PORT_Q,  3, 1); /* LCD_ON/OFF */
+	pin_set(&gpio_sc, PORT_Q,  6, 1); /* LCD_BL_CTRL */
+	pin_set(&gpio_sc, PORT_G, 13, 1); /* LCD_DE */
 
 	while (1) {
 		printf("%s: Hello World from n6\n", __func__);
 		mdx_usleep(500000);
 		mdx_usleep(500000);
+		printf("risaf11 st %x\n", *(uint32_t *)(0x54030000 + 0x8));
+		printf("risaf11 addr %x\n", *(uint32_t *)(0x54030000 + 0x24));
+		printf("risaf11 err st %x\n", *(uint32_t *)(0x54030000 + 0x20));
+		printf("risaf6 st %x\n", *(uint32_t *)(0x5402b000 + 0x8));
+		printf("risaf5 st %x\n", *(uint32_t *)(0x5402a000 + 0x8));
 	}
 
 	return (0);
