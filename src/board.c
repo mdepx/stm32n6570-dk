@@ -45,12 +45,20 @@ static struct stm32n6_xspi_softc xspi1_sc;
 static struct stm32n6_pwr_softc pwr_sc;
 
 struct stm32f4_gpio_softc gpio_sc;
-struct stm32f4_ltdc_softc ltdc_sc;
+struct stm32n6_ltdc_softc ltdc_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
 
 static struct layer_info info;
+
+#define	APS256XX_READ_CMD		0x00
+#define	APS256XX_READ_LINEAR_BURST_CMD	0x20
+#define	APS256XX_WRITE_CMD		0x80
+#define	APS256XX_WRITE_LINEAR_BURST_CMD	0xA0
+#define	APS256XX_RESET_CMD		0xFF
+#define	APS256XX_READ_REG_CMD		0x40
+#define	APS256XX_WRITE_REG_CMD		0xC0
 
 void
 udelay(uint32_t usec)
@@ -191,9 +199,44 @@ board_init(void)
 	stm32n6_pwr_setup_vddio23_1v8(&pwr_sc);
 
 	/* PSRAM */
-	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
-	stm32n6_xspi_setup(&xspi1_sc, NULL);
+	struct xspi_config conf;
 
+	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
+
+	conf.dummy_cycles = 0;
+	conf.prescaler = 0;
+	conf.dqs_en = 0;
+	conf.mem_type = DCR1_MTYP_AP;
+	conf.dev_size = DCR1_DEVSIZE_256M;
+	conf.cs_cycles = 6;
+	conf.data_dtr = 1;
+	conf.data_lines = 8;
+	conf.address_dtr = 1;
+	conf.address_lines = 8;
+	conf.address_size = 32;
+	conf.instruction_dtr = 0;
+	conf.instruction_lines = 8;
+	conf.instruction_size = 8;
+	conf.instruction = APS256XX_WRITE_REG_CMD;
+	conf.mode = XSPI_MODE_INDIRECT_WRITE;
+	stm32n6_xspi_setup(&xspi1_sc, &conf);
+	stm32n6_xspi_transfer(&xspi1_sc, 0, 0x0030, 2); /* read latency 7 */
+	stm32n6_xspi_setup(&xspi1_sc, &conf);
+	stm32n6_xspi_transfer(&xspi1_sc, 4, 0x0020, 2); /* write latency 7 */
+	stm32n6_xspi_setup(&xspi1_sc, &conf);
+	stm32n6_xspi_transfer(&xspi1_sc, 8, 0x0040, 2); /* x16 mode */
+
+	/* Reconfigure XSPI for memory-mapped mode. */
+	conf.instruction = 0;
+	conf.dqs_en = 1;
+	conf.dummy_cycles = 6; /* nb: 4 for 8 data lines */
+	conf.data_lines = 16;
+	conf.mode = XSPI_MODE_MEMORY_MAPPED;
+	conf.instruction_read = APS256XX_READ_LINEAR_BURST_CMD;
+	conf.instruction_write = APS256XX_WRITE_LINEAR_BURST_CMD;
+	stm32n6_xspi_setup(&xspi1_sc, &conf);
+
+	/* LTDC */
 	info.width = 800;
 	info.height = 480;
 	info.hsync = 4;
@@ -203,16 +246,16 @@ board_init(void)
 	info.vbp = 8;
 	info.hbp = 8;
 	info.bpp = 24;
-	info.base = 0x90000000;
 	info.base = 0x34200000;
+	info.base = 0x90000000;
 
 	pin_set(&gpio_sc, PORT_E,  1, 1); /* NRST */
 	pin_set(&gpio_sc, PORT_Q,  3, 1); /* LCD_ON/OFF */
 	pin_set(&gpio_sc, PORT_Q,  6, 1); /* LCD_BL_CTRL */
 	pin_set(&gpio_sc, PORT_G, 13, 1); /* LCD_DE */
 
-	stm32f4_ltdc_init(&ltdc_sc, LTDC_BASE);
-	stm32f4_ltdc_setup(&ltdc_sc, &info, 1);
+	stm32n6_ltdc_init(&ltdc_sc, LTDC_BASE);
+	stm32n6_ltdc_setup(&ltdc_sc, &info, 1);
 
 #if 0
 	malloc_init();
