@@ -18,7 +18,7 @@ readelf:
 	${CROSS_COMPILE}readelf -a obj/${APP}.elf | less
 
 objdump:
-	${CROSS_COMPILE}objdump -d obj/${APP}.elf | less
+	${CROSS_COMPILE}objdump -S -d obj/${APP}.elf | less
 
 reset:
 	~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -hardRST
