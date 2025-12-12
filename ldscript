@@ -26,13 +26,13 @@
 MEMORY
 {
 	/* Secure AXI SRAM1 bank. */
-	sram1 (rwx) : ORIGIN = 0x34180000, LENGTH = 1024K
+	sram1 (rwx) : ORIGIN = 0x34120000, LENGTH = 1024K
 }
 
 ENTRY(__start)
 SECTIONS
 {
-	. = 0x34180000;
+	. = 0x34120000;
 	.start . : {
 		*start.o(.text)
 	} > sram1
@@ -70,7 +70,7 @@ SECTIONS
 	} > sram1
 
 	. = ALIGN(8);
-	. = . + 0x400; /* 1kB of stack memory */
+	. = . + 0x4096; /* 4kB of stack memory */
 	stack_top = .;
 	_emem = ABSOLUTE(.);
 }
