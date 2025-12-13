@@ -260,14 +260,14 @@ board_init(void)
 	stm32n6_risaf_init(&risaf11_sc, RISAF11_BASE);
 	stm32n6_risaf_init(&risaf6_sc, RISAF6_BASE);
 
-	/* RISAF11: peripherals to XSPI1 access */
+	/* RISAF11: peripherals to XSPI1 access (256mb) */
 	rconf.base_start = 0x90000000;
-	rconf.base_end = 0x92000000;
+	rconf.base_end = 0x91000000;
 	rconf.base_cid_write = 0xff;
 	rconf.base_cid_read = 0xff;
 	rconf.base_sec = 0;
 	rconf.suba_start = 0x90000000;
-	rconf.suba_end = 0x92000000;
+	rconf.suba_end = 0x91000000;
 	rconf.suba_rd = 1;
 	rconf.suba_wr = 1;
 	rconf.suba_cid = 0; /* All peripherals */
@@ -282,12 +282,12 @@ board_init(void)
 
 	/* RISAF6: peripherals to AXISRAM3/4/5/6 access. */
 	rconf.base_start = 0x34200000;
-	rconf.base_end = 0x36200000;
+	rconf.base_end = 0x343c0000;
 	rconf.base_cid_write = 0xff;
 	rconf.base_cid_read = 0xff;
 	rconf.base_sec = 0;
 	rconf.suba_start = 0x34200000;
-	rconf.suba_end = 0x36200000;
+	rconf.suba_end = 0x343c0000;
 	rconf.suba_rd = 1;
 	rconf.suba_wr = 1;
 	rconf.suba_cid = 0; /* All peripherals */
