@@ -300,7 +300,7 @@ board_init(void)
 	rconf.suba_sec = 1;
 	stm32n6_risaf_setup(&risaf6_sc, 2, &rconf);
 
-	/* LTDC */
+	/* LTDC layer. */
 	info.width = 800;
 	info.height = 480;
 	info.hsync = 4;
