@@ -43,6 +43,7 @@ static struct stm32l4_usart_softc usart_sc;
 static struct stm32f4_timer_softc timer_sc;
 static struct stm32n6_xspi_softc xspi1_sc;
 static struct stm32n6_pwr_softc pwr_sc;
+static struct stm32f4_i2c_softc i2c1_sc;
 
 struct stm32f4_gpio_softc gpio_sc;
 static struct stm32n6_ltdc_softc ltdc_sc;
@@ -54,6 +55,7 @@ static struct stm32n6_csi_softc csi_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
+static struct mdx_device dev_i2c1 = { .sc = &i2c1_sc };
 
 static struct layer_info info;
 
@@ -170,6 +172,8 @@ static const struct stm32_gpio_pin uart_pins[] = {
 	 */
 	{ PORT_C, 8, MODE_OUT, 0, OT_PP, OS_VH, FLOAT }, /* NRST_CAM */
 	{ PORT_D, 2, MODE_OUT, 0, OT_PP, OS_VH, FLOAT }, /* EN_MODULE */
+	{ PORT_H, 9, MODE_ALT, 4, OT_OD, OS_VH, FLOAT }, /* I2C1_SCL */
+	{ PORT_C, 1, MODE_ALT, 4, OT_OD, OS_VH, FLOAT }, /* I2C1_SDA */
 
 	PINS_END
 };
@@ -338,6 +342,8 @@ board_init(void)
 
 	stm32n6_ltdc_init(&ltdc_sc, LTDC_BASE);
 	stm32n6_ltdc_setup(&ltdc_sc, &info, 1);
+
+	stm32f4_i2c_init(&dev_i2c1, I2C1_BASE);
 
 	/* Reset & Enable camera module */
 	pin_set(&gpio_sc, PORT_C, 8, 0);
