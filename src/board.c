@@ -48,6 +48,7 @@ struct stm32f4_gpio_softc gpio_sc;
 static struct stm32n6_ltdc_softc ltdc_sc;
 static struct stm32n6_ramcfg_softc ramcfg_sc;
 static struct stm32n6_risaf_softc risaf11_sc;
+static struct stm32n6_risaf_softc risaf6_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
@@ -160,6 +161,7 @@ board_init(void)
 {
 	struct rcc_config cfg;
 	struct xspi_config conf;
+	struct risaf_config rconf;
 
 	bzero(&cfg, sizeof(struct rcc_config));
 	cfg.ahb4enr = AHB4ENSR_GPIOAEN | AHB4ENSR_GPIOBEN | AHB4ENSR_GPIOCEN |
@@ -254,8 +256,49 @@ board_init(void)
 	stm32n6_ramcfg_shutdown(&ramcfg_sc, 5, 0);
 	stm32n6_ramcfg_shutdown(&ramcfg_sc, 6, 0);
 
-	/* RISAF */
+	/* RISAFs Configuration */
 	stm32n6_risaf_init(&risaf11_sc, RISAF11_BASE);
+	stm32n6_risaf_init(&risaf6_sc, RISAF6_BASE);
+
+	/* RISAF11: peripherals to XSPI1 access */
+	rconf.base_start = 0x90000000;
+	rconf.base_end = 0x92000000;
+	rconf.base_cid_write = 0xff;
+	rconf.base_cid_read = 0xff;
+	rconf.base_sec = 0;
+	rconf.suba_start = 0x90000000;
+	rconf.suba_end = 0x92000000;
+	rconf.suba_rd = 1;
+	rconf.suba_wr = 1;
+	rconf.suba_cid = 0; /* All peripherals */
+	rconf.suba_sec = 0;
+	stm32n6_risaf_setup(&risaf11_sc, 1, &rconf);
+
+	/* RISAF11: CPU to XSPI1 access */
+	rconf.base_sec = 1;
+	rconf.suba_cid = 1;
+	rconf.suba_sec = 1;
+	stm32n6_risaf_setup(&risaf11_sc, 2, &rconf);
+
+	/* RISAF6: peripherals to AXISRAM3/4/5/6 access. */
+	rconf.base_start = 0x34200000;
+	rconf.base_end = 0x36200000;
+	rconf.base_cid_write = 0xff;
+	rconf.base_cid_read = 0xff;
+	rconf.base_sec = 0;
+	rconf.suba_start = 0x34200000;
+	rconf.suba_end = 0x36200000;
+	rconf.suba_rd = 1;
+	rconf.suba_wr = 1;
+	rconf.suba_cid = 0; /* All peripherals */
+	rconf.suba_sec = 0;
+	stm32n6_risaf_setup(&risaf6_sc, 1, &rconf);
+
+	/* RISAF6: CPU to AXISRAM3/4/5/6 access. */
+	rconf.base_sec = 1;
+	rconf.suba_cid = 1;
+	rconf.suba_sec = 1;
+	stm32n6_risaf_setup(&risaf6_sc, 2, &rconf);
 
 	/* LTDC */
 	info.width = 800;
