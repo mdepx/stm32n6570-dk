@@ -4,6 +4,8 @@ This project aims to evaluate the NPU included into stm32n6 SoC from ST-Microele
 
 Current status: Display initialized, no camera or NPU yet in use.
 
+Enable developer mode by switching the BOOT1 jumper to the HIGH position.
+
 ### Set up compiler
     $ sudo apt install gcc-arm-none-eabi
 
