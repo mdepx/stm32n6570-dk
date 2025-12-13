@@ -8,5 +8,5 @@
     $ cd stm32n6570-dk
     $ make clean all
 
-![n6dk](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/n6rk.jpg)
-![n6dk dev mode](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/n6rk_devmode.jpg)
+![n6dk](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/n6dk.jpg)
+![n6dk dev mode](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/n6dk_devmode.jpg)
