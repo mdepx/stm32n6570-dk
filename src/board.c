@@ -49,6 +49,8 @@ static struct stm32n6_ltdc_softc ltdc_sc;
 static struct stm32n6_ramcfg_softc ramcfg_sc;
 static struct stm32n6_risaf_softc risaf11_sc;
 static struct stm32n6_risaf_softc risaf6_sc;
+static struct stm32n6_dcmipp_softc dcmipp_sc;
+static struct stm32n6_csi_softc csi_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
@@ -320,6 +322,9 @@ board_init(void)
 
 	stm32n6_ltdc_init(&ltdc_sc, LTDC_BASE);
 	stm32n6_ltdc_setup(&ltdc_sc, &info, 1);
+
+	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
+	stm32n6_csi_init(&csi_sc, CSI_BASE);
 
 #if 0
 	malloc_init();
