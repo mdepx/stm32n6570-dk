@@ -47,6 +47,7 @@ static struct stm32n6_pwr_softc pwr_sc;
 struct stm32f4_gpio_softc gpio_sc;
 static struct stm32n6_ltdc_softc ltdc_sc;
 static struct stm32n6_ramcfg_softc ramcfg_sc;
+static struct stm32n6_risaf_softc risaf11_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
@@ -158,6 +159,8 @@ void
 board_init(void)
 {
 	struct rcc_config cfg;
+	struct xspi_config conf;
+
 	bzero(&cfg, sizeof(struct rcc_config));
 	cfg.ahb4enr = AHB4ENSR_GPIOAEN | AHB4ENSR_GPIOBEN | AHB4ENSR_GPIOCEN |
 	    AHB4ENSR_GPIODEN | AHB4ENSR_GPIOEEN | AHB4ENSR_GPIOFEN |
@@ -205,10 +208,7 @@ board_init(void)
 	stm32n6_pwr_setup_vddio23_1v8(&pwr_sc);
 
 	/* PSRAM */
-	struct xspi_config conf;
-
-	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
-
+	bzero(&conf, sizeof(struct xspi_config));
 	conf.dummy_cycles = 0;
 	conf.prescaler = 0;
 	conf.dqs_en = 0;
@@ -225,12 +225,17 @@ board_init(void)
 	conf.instruction_size = 8;
 	conf.instruction = APS256XX_WRITE_REG_CMD;
 	conf.mode = XSPI_MODE_INDIRECT_WRITE;
+
+	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
+	/* Read latency 7, up to 200MHz. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	stm32n6_xspi_transfer(&xspi1_sc, 0, 0x0030, 2); /* read latency 7 */
+	stm32n6_xspi_transfer(&xspi1_sc, 0, 0x0030, 2);
+	/* Write latency 7, up to 200MHz. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	stm32n6_xspi_transfer(&xspi1_sc, 4, 0x0020, 2); /* write latency 7 */
+	stm32n6_xspi_transfer(&xspi1_sc, 4, 0x0020, 2);
+	/* Switch to 16 data lines mode. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	stm32n6_xspi_transfer(&xspi1_sc, 8, 0x0040, 2); /* x16 mode */
+	stm32n6_xspi_transfer(&xspi1_sc, 8, 0x0040, 2);
 
 	/* Reconfigure XSPI for memory-mapped mode. */
 	conf.instruction = 0;
@@ -248,6 +253,9 @@ board_init(void)
 	stm32n6_ramcfg_shutdown(&ramcfg_sc, 4, 0);
 	stm32n6_ramcfg_shutdown(&ramcfg_sc, 5, 0);
 	stm32n6_ramcfg_shutdown(&ramcfg_sc, 6, 0);
+
+	/* RISAF */
+	stm32n6_risaf_init(&risaf11_sc, RISAF11_BASE);
 
 	/* LTDC */
 	info.width = 800;
