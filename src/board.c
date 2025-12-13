@@ -343,8 +343,6 @@ board_init(void)
 	stm32n6_ltdc_init(&ltdc_sc, LTDC_BASE);
 	stm32n6_ltdc_setup(&ltdc_sc, &info, 1);
 
-	stm32f4_i2c_init(&dev_i2c1, I2C1_BASE);
-
 	/* Reset & Enable camera module */
 	pin_set(&gpio_sc, PORT_C, 8, 0);
 	pin_set(&gpio_sc, PORT_D, 2, 0);
@@ -352,6 +350,7 @@ board_init(void)
 	pin_set(&gpio_sc, PORT_C, 8, 1);
 	pin_set(&gpio_sc, PORT_D, 2, 1);
 
+	stm32f4_i2c_init(&dev_i2c1, I2C1_BASE);	/* imx335 */
 	stm32n6_csi_init(&csi_sc, CSI_BASE);
 	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
 
