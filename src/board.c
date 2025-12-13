@@ -155,6 +155,22 @@ static const struct stm32_gpio_pin uart_pins[] = {
 	{ PORT_P, 14, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* IO14 */
 	{ PORT_P, 15, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* IO15 */
 
+	/* imx335 camera module */
+	/*
+	 * I2C address of MB1854-B01:
+	 * Camera: Read 0x35 / Write 0x34
+	 * TOF: Read 0x53 / Write 0x52
+	 * IMU: Read 0xD6 / Write 0xD5
+	 * PQ5 TOF_LPn
+	 * PQ0 TOF_INT
+	 * PQ1 IMU_INT1
+	 * PQ2 IMU_INT2
+	 * PH9 I2C_SCL
+	 * PC1 I2C_SDA
+	 */
+	{ PORT_C, 8, MODE_OUT, 0, OT_PP, OS_VH, FLOAT }, /* NRST_CAM */
+	{ PORT_D, 2, MODE_OUT, 0, OT_PP, OS_VH, FLOAT }, /* EN_MODULE */
+
 	PINS_END
 };
 
@@ -323,8 +339,15 @@ board_init(void)
 	stm32n6_ltdc_init(&ltdc_sc, LTDC_BASE);
 	stm32n6_ltdc_setup(&ltdc_sc, &info, 1);
 
-	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
+	/* Reset & Enable camera module */
+	pin_set(&gpio_sc, PORT_C, 8, 0);
+	pin_set(&gpio_sc, PORT_D, 2, 0);
+	udelay(10000);
+	pin_set(&gpio_sc, PORT_C, 8, 1);
+	pin_set(&gpio_sc, PORT_D, 2, 1);
+
 	stm32n6_csi_init(&csi_sc, CSI_BASE);
+	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
 
 #if 0
 	malloc_init();
