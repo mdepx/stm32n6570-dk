@@ -36,78 +36,67 @@ extern struct stm32f4_gpio_softc gpio_sc;
 
 #define	dprintf(fmt, ...)
 
-int
-main(void)
+static void
+memtest(uint32_t addr, uint32_t len)
 {
-	int i __unused;
+	uint32_t data;
+	int i;
 
-#if 1
-	uint32_t addr;
-	int k;
-	printf("reading xspi1 val\n");
+	printf("Starting memory test for %x\n", addr);
 
-	k = 64;
-	k = 2048;
-	addr = 0x90000000;
-	addr = 0x34200000;
-
-	for (i = 0; i <= k; i += 4)
+	printf("Writing...\n");
+	for (i = 0; i <= len; i += 4)
 		*(uint32_t *)(addr + i) = i;
-	for (i = k; i >= 0; i -= 4)
-		printf("xspi1 %d val %d\n", i, *(uint32_t *)(addr + i));
 
-	printf("ok\n");
-#endif
-
-#if 1
-	uint32_t base;
-	base = 0x90000000;
-	base = 0x34200000;
-#if 0
-	for (i = 0; i < (480 * 800 * 3); i += 3) {
-		*(uint8_t *)(base + i + 0) = 0xff;
-		*(uint8_t *)(base + i + 1) = 0x00;
-		*(uint8_t *)(base + i + 2) = 0x00;
+	printf("Reading...\n");
+	for (i = len; i >= 0; i -= 4) {
+		data = *(uint32_t *)(addr + i);
+		if (i != data)
+			panic("test failed");
 	}
-#else
-	int flag = 0;
+
+	printf("Test OK\n");
+}
+
+static void
+memfill(uint32_t base)
+{
+	int flag;
+	int i;
+
+	flag = 0;
+
+	printf("LTDC test for %x\n", base);
 
 	while (1) {
-		if (flag == 0xff)
+		if (flag == 1)
 			flag = 0;
 		else
-			flag = 0xff;
-#if 1
+			flag = 1;
+
 		for (i = 0; i < (480 * 800 * 4); i += 4)
 			if (flag)
 				*(uint32_t *)(base + i) = 0xdddddddd;
 			else
 				*(uint32_t *)(base + i) = 0x0;
-#else
-		for (i = 0; i < (480 * 800 * 3); i += 3) {
-			*(uint8_t *)(base + i + 0) = flag;
-			*(uint8_t *)(base + i + 1) = 0x00;
-			*(uint8_t *)(base + i + 2) = 0x00;
-		}
-#endif
 	}
-#endif
-#endif
+}
 
-	pin_set(&gpio_sc, PORT_E,  1, 1); /* NRST */
-	pin_set(&gpio_sc, PORT_Q,  3, 1); /* LCD_ON/OFF */
-	pin_set(&gpio_sc, PORT_Q,  6, 1); /* LCD_BL_CTRL */
-	pin_set(&gpio_sc, PORT_G, 13, 1); /* LCD_DE */
+int
+main(void)
+{
+
+	memtest(0x90000000, 2048);
+	memtest(0x34200000, 2048);
+
+	/* Note: switch LTDC layer address in src/board.c */
+	memfill(0x34200000);
+	memfill(0x90000000);
 
 	while (1) {
 		printf("%s: Hello World from n6\n", __func__);
 		mdx_usleep(500000);
 		mdx_usleep(500000);
-		printf("risaf11 st %x\n", *(uint32_t *)(0x54030000 + 0x8));
-		printf("risaf11 addr %x\n", *(uint32_t *)(0x54030000 + 0x24));
-		printf("risaf11 err st %x\n", *(uint32_t *)(0x54030000 + 0x20));
-		printf("risaf6 st %x\n", *(uint32_t *)(0x5402b000 + 0x8));
-		printf("risaf5 st %x\n", *(uint32_t *)(0x5402a000 + 0x8));
 	}
 
 	return (0);
