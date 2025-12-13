@@ -48,8 +48,8 @@ main(void)
 
 	k = 64;
 	k = 2048;
-	addr = 0x34200000;
 	addr = 0x90000000;
+	addr = 0x34200000;
 
 	for (i = 0; i <= k; i += 4)
 		*(uint32_t *)(addr + i) = i;
@@ -61,8 +61,8 @@ main(void)
 
 #if 1
 	uint32_t base;
-	base = 0x34200000;
 	base = 0x90000000;
+	base = 0x34200000;
 #if 0
 	for (i = 0; i < (480 * 800 * 3); i += 3) {
 		*(uint8_t *)(base + i + 0) = 0xff;

@@ -45,7 +45,8 @@ static struct stm32n6_xspi_softc xspi1_sc;
 static struct stm32n6_pwr_softc pwr_sc;
 
 struct stm32f4_gpio_softc gpio_sc;
-struct stm32n6_ltdc_softc ltdc_sc;
+static struct stm32n6_ltdc_softc ltdc_sc;
+static struct stm32n6_ramcfg_softc ramcfg_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
@@ -236,6 +237,13 @@ board_init(void)
 	conf.instruction_write = APS256XX_WRITE_LINEAR_BURST_CMD;
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
 
+	/* AXISRAM unshutdown */
+	stm32n6_ramcfg_init(&ramcfg_sc, RAMCFG_BASE);
+	stm32n6_ramcfg_shutdown(&ramcfg_sc, 3, 0);
+	stm32n6_ramcfg_shutdown(&ramcfg_sc, 4, 0);
+	stm32n6_ramcfg_shutdown(&ramcfg_sc, 5, 0);
+	stm32n6_ramcfg_shutdown(&ramcfg_sc, 6, 0);
+
 	/* LTDC */
 	info.width = 800;
 	info.height = 480;
@@ -246,8 +254,8 @@ board_init(void)
 	info.vbp = 8;
 	info.hbp = 8;
 	info.bpp = 24;
-	info.base = 0x34200000;
 	info.base = 0x90000000;
+	info.base = 0x34200000;
 
 	pin_set(&gpio_sc, PORT_E,  1, 1); /* NRST */
 	pin_set(&gpio_sc, PORT_Q,  3, 1); /* LCD_ON/OFF */
