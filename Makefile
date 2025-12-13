@@ -9,6 +9,8 @@ OBJCOPY =	${CROSS_COMPILE}objcopy
 
 OSDIR =		mdepx
 
+ADAPTOR_ID ?= 000700284142500E20353451
+
 all:
 	python3 -B ${OSDIR}/tools/emitter.py -j mdepx.conf
 	@${OBJCOPY} -O binary obj/${APP}.elf obj/${APP}.bin
@@ -40,6 +42,6 @@ run:	all
 	gdb-multiarch ./obj/${APP}.elf
 
 gdb-server:
-	~/st/stm32cubeide_2.0.0/plugins/com.st.stm32cube.ide.mcu.externaltools.stlink-gdb-server.linux64_2.2.300.202509021040/tools/bin/ST-LINK_gdbserver -p 61234 -l 1 -d -s -cp ~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/ -m 1 -g -i 000700284142500E20353451
+	~/st/stm32cubeide_2.0.0/plugins/com.st.stm32cube.ide.mcu.externaltools.stlink-gdb-server.linux64_2.2.300.202509021040/tools/bin/ST-LINK_gdbserver -p 61234 -l 1 -d -s -cp ~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/ -m 1 -g -i ${ADAPTOR_ID}
 
 include ${OSDIR}/mk/user.mk
