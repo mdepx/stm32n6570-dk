@@ -44,4 +44,7 @@ run:	all
 gdb-server:
 	~/st/stm32cubeide_2.0.0/plugins/com.st.stm32cube.ide.mcu.externaltools.stlink-gdb-server.linux64_2.2.300.202509021040/tools/bin/ST-LINK_gdbserver -p 61234 -l 1 -d -s -cp ~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/ -m 1 -g -i ${ADAPTOR_ID}
 
+dump_regs:
+	~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer.sh -c port=SWD mode=HOTPLUG -el ~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/ExternalLoader/MX66UW1G45G_STM32N6570-DK.stldr -regdump regdump.txt
+
 include ${OSDIR}/mk/user.mk
