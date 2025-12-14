@@ -30,9 +30,11 @@
 
 #include <arm/stm/stm32n6.h>
 
+#include <dev/imx335/imx335.h>
 #include <dev/i2c/i2c.h>
 
 extern struct stm32f4_gpio_softc gpio_sc;
+extern struct mdx_device dev_i2c1;
 
 #define	dprintf(fmt, ...)
 
@@ -58,7 +60,7 @@ memtest(uint32_t addr, uint32_t len)
 	printf("Test OK\n");
 }
 
-static void
+static void __unused
 memfill(uint32_t base)
 {
 	int flag;
@@ -85,9 +87,20 @@ memfill(uint32_t base)
 int
 main(void)
 {
+	uint8_t val;
+	int error;
 
 	memtest(0x90000000, 2048);
 	memtest(0x34200000, 2048);
+
+	error = imx335_init(&dev_i2c1, 0x34);
+	if (error)
+		panic("could not init imx335");
+
+	/* Verify */
+	error = imx335_read_data(&dev_i2c1, 0x34, IMX335_STANDBY, 1, &val);
+	if (error != 0 || val != 0)
+		panic("could not verify imx335 init");
 
 	/* Note: switch LTDC layer address in src/board.c */
 	memfill(0x34200000);

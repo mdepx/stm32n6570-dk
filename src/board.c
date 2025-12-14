@@ -55,7 +55,7 @@ static struct stm32n6_csi_softc csi_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
-static struct mdx_device dev_i2c1 = { .sc = &i2c1_sc };
+struct mdx_device dev_i2c1 = { .sc = &i2c1_sc };
 
 static struct layer_info info;
 
@@ -196,7 +196,7 @@ board_init(void)
 	    AHB5ENSR_XSPIMENS | AHB5ENSR_XSPI2ENS | AHB5ENSR_XSPI1ENS |
 	    AHB5ENSR_FMCENS | AHB5ENSR_JPEGENS | AHB5ENSR_DMA2DENS;
 	cfg.apb1lenr = APB1LENSR_UART5ENS | APB1LENSR_USART2ENS |
-	    APB1LENSR_TIM2ENS;
+	    APB1LENSR_TIM2ENS | APB1LENSR_I2C1ENS;
 	cfg.apb2enr = APB2ENSR_USART1EN | APB2ENSR_TIM1ENS;
 	cfg.apb5enr = APB5ENSR_LTDCEN | APB5ENSR_DCMIPPENS |
 	    APB5ENSR_GFXTIMENS | APB5ENSR_VENCENS | APB5ENSR_CSIENS;
@@ -350,7 +350,11 @@ board_init(void)
 	pin_set(&gpio_sc, PORT_C, 8, 1);
 	pin_set(&gpio_sc, PORT_D, 2, 1);
 
+	stm32n6_pwr_setup_vddio4_3v3(&pwr_sc, 1);
 	stm32f4_i2c_init(&dev_i2c1, I2C1_BASE);	/* imx335 */
+	mdx_intc_setup(&dev_nvic, 100, stm32f4_i2c_intr, &i2c1_sc);
+	mdx_intc_enable(&dev_nvic, 100);
+
 	stm32n6_csi_init(&csi_sc, CSI_BASE);
 	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
 
