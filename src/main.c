@@ -103,6 +103,10 @@ main(void)
 	if (error != 0 || val != 0)
 		panic("could not verify imx335 init");
 
+	error = imx335_set_gain(&dev_i2c1, 0x34, 60);
+	if (error != 0)
+		panic("could not set gain");
+
 #if 0
 	/* Camera Test Pattern */
 	error = imx335_test_pattern_enable(&dev_i2c1, 0x34, 10);
