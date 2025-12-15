@@ -209,13 +209,14 @@ board_init(void)
 	/* RCC */
 	stm32n6_rcc_init(&rcc_sc, RCC_BASE);
 	stm32n6_rcc_setup(&rcc_sc, &cfg);
+	stm32n6_rcc_pll1(&rcc_sc);
 
 	/* GPIO */
 	stm32f4_gpio_init(&gpio_sc, GPIO_BASE);
 	pin_configure(&gpio_sc, uart_pins);
 
 	/* USART */
-	stm32l4_usart_init(&usart_sc, USART1_BASE, 32000000, 115200);
+	stm32l4_usart_init(&usart_sc, USART1_BASE, 150000000, 115200);
 	mdx_console_register(uart_putchar, (void *)&usart_sc);
 
 	/* NVIC */
@@ -223,7 +224,7 @@ board_init(void)
 	*(uint32_t *)0xe000ed08 = 0x34120000; /* Setup VTOR. */
 
 	/* TIMER */
-	stm32f4_timer_init(&timer_sc, TIM1_BASE, 64000000);
+	stm32f4_timer_init(&timer_sc, TIM1_BASE, 150000000);
 	mdx_intc_setup(&dev_nvic, 115, stm32f4_timer_intr, &timer_sc);
 	mdx_intc_enable(&dev_nvic, 115);
 
@@ -364,7 +365,6 @@ board_init(void)
 	dconf.hdivfactor	= 316;
 	dconf.vdivfactor	= 253;
 
-	stm32n6_rcc_pll1(&rcc_sc);
 	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
 	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, &dconf);
 	stm32n6_dcmipp_setup(&dcmipp_sc);
