@@ -33,6 +33,8 @@
 #include <dev/imx335/imx335.h>
 #include <dev/i2c/i2c.h>
 
+extern struct stm32n6_dcmipp_softc dcmipp_sc;
+extern struct stm32n6_csi_softc csi_sc;
 extern struct stm32f4_gpio_softc gpio_sc;
 extern struct mdx_device dev_i2c1;
 
@@ -96,18 +98,32 @@ main(void)
 	error = imx335_init(&dev_i2c1, 0x34);
 	if (error)
 		panic("could not init imx335");
-
 	/* Verify */
 	error = imx335_read_data(&dev_i2c1, 0x34, IMX335_STANDBY, 1, &val);
 	if (error != 0 || val != 0)
 		panic("could not verify imx335 init");
 
+#if 0
+	/* Camera Test Pattern */
+	error = imx335_test_pattern_enable(&dev_i2c1, 0x34, 10);
+	if (error)
+		panic("could not enable pattern");
+	/* Verify */
+	error = imx335_read_data(&dev_i2c1, 0x34, IMX335_TPG, 1, &val);
+	if (error != 0 || val != 10)
+		panic("could not verify imx335 tpg");
+#endif
+
+#if 0
 	/* Note: switch LTDC layer address in src/board.c */
 	memfill(0x34200000);
 	memfill(0x90000000);
+#endif
 
 	while (1) {
 		printf("%s: Hello World from n6\n", __func__);
+		stm32n6_dcmipp_status(&dcmipp_sc);
+		stm32n6_csi_status(&csi_sc);
 		mdx_usleep(500000);
 		mdx_usleep(500000);
 	}

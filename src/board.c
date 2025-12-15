@@ -50,8 +50,8 @@ static struct stm32n6_ltdc_softc ltdc_sc;
 static struct stm32n6_ramcfg_softc ramcfg_sc;
 static struct stm32n6_risaf_softc risaf11_sc;
 static struct stm32n6_risaf_softc risaf6_sc;
-static struct stm32n6_dcmipp_softc dcmipp_sc;
-static struct stm32n6_csi_softc csi_sc;
+struct stm32n6_dcmipp_softc dcmipp_sc;
+struct stm32n6_csi_softc csi_sc;
 
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
@@ -331,7 +331,7 @@ board_init(void)
 	info.hfp = 8;
 	info.vbp = 8;
 	info.hbp = 8;
-	info.bpp = 24;
+	info.bpp = 16;
 	info.base = 0x90000000;
 	info.base = 0x34200000;
 
@@ -355,8 +355,20 @@ board_init(void)
 	mdx_intc_setup(&dev_nvic, 100, stm32f4_i2c_intr, &i2c1_sc);
 	mdx_intc_enable(&dev_nvic, 100);
 
-	stm32n6_csi_init(&csi_sc, CSI_BASE);
+	/* DCMIPP and CSI-2 */
+	struct stm32n6_dcmipp_downsize_config dconf;
+	dconf.hratio		= 25656;
+	dconf.vratio		= 33161;
+	dconf.hsize		= 800;
+	dconf.vsize		= 480;
+	dconf.hdivfactor	= 316;
+	dconf.vdivfactor	= 253;
+
+	stm32n6_rcc_pll1(&rcc_sc);
 	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
+	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, &dconf);
+	stm32n6_dcmipp_setup(&dcmipp_sc);
+	stm32n6_csi_init(&csi_sc, CSI_BASE);
 
 #if 0
 	malloc_init();
