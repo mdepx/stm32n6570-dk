@@ -107,7 +107,7 @@ main(void)
 	if (error != 0)
 		panic("could not set exposure");
 
-	error = imx335_set_gain(&dev_i2c1, 0x34, 60);
+	error = imx335_set_gain(&dev_i2c1, 0x34, 10);
 	if (error != 0)
 		panic("could not set gain");
 
