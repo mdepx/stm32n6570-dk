@@ -221,7 +221,7 @@ board_init(void)
 
 	/* NVIC */
 	arm_nvic_init(&dev_nvic, NVIC_BASE);
-	*(uint32_t *)0xe000ed08 = 0x34120000; /* Setup VTOR. */
+	*(volatile uint32_t *)0xe000ed08 = 0x34120000; /* Setup VTOR. */
 
 	/* TIMER */
 	stm32f4_timer_init(&timer_sc, TIM1_BASE, 150000000);
@@ -333,8 +333,8 @@ board_init(void)
 	info.vbp = 8;
 	info.hbp = 8;
 	info.bpp = 16;
-	info.base = 0x90000000;
-	info.base = 0x34200000;
+	info.base = 0x90000000; /* External PSRAM */
+	info.base = 0x34200000;	/* AXISRAM3 */
 
 	pin_set(&gpio_sc, PORT_E,  1, 1); /* NRST */
 	pin_set(&gpio_sc, PORT_Q,  3, 1); /* LCD_ON/OFF */
