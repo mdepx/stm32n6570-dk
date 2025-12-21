@@ -33,6 +33,8 @@
 #include <dev/imx335/imx335.h>
 #include <dev/i2c/i2c.h>
 
+#include "npu.h"
+
 extern struct stm32n6_dcmipp_softc dcmipp_sc;
 extern struct stm32n6_csi_softc csi_sc;
 extern struct stm32f4_gpio_softc gpio_sc;
@@ -127,6 +129,9 @@ main(void)
 	memfill(0x34200000);
 	memfill(0x90000000);
 #endif
+
+	if (1 == 0)
+		npu_test();
 
 	while (1) {
 		printf("%s: Hello World from n6\n", __func__);
