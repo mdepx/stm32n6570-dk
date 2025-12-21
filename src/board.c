@@ -41,7 +41,8 @@
 static struct stm32n6_rcc_softc rcc_sc;
 static struct stm32l4_usart_softc usart_sc;
 static struct stm32f4_timer_softc timer_sc;
-static struct stm32n6_xspi_softc xspi1_sc;
+static struct stm32n6_xspi_softc xspi1_sc;	/* PSRAM */
+static struct stm32n6_xspi_softc xspi2_sc;	/* NOR flash */
 static struct stm32n6_pwr_softc pwr_sc;
 static struct stm32f4_i2c_softc i2c1_sc;
 
@@ -157,6 +158,21 @@ static const struct stm32_gpio_pin uart_pins[] = {
 	{ PORT_P, 14, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* IO14 */
 	{ PORT_P, 15, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* IO15 */
 
+	/* XSPIM_P2 MX66UW1G45G */
+	{ PORT_N,  0, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* DQS0 */
+	{ PORT_N,  1, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* NCS1 */
+	{ PORT_N,  6, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* CLK */
+	{ PORT_N,  7, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* NCLK */
+
+	{ PORT_N,  2, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D0 */
+	{ PORT_N,  3, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D1 */
+	{ PORT_N,  4, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D2 */
+	{ PORT_N,  5, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D3 */
+	{ PORT_N,  8, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D4 */
+	{ PORT_N,  9, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D5 */
+	{ PORT_N, 10, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D6 */
+	{ PORT_N, 11, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D7 */
+
 	/* imx335 camera module */
 	/*
 	 * I2C address of MB1854-B01:
@@ -228,7 +244,7 @@ board_init(void)
 	mdx_intc_setup(&dev_nvic, 115, stm32f4_timer_intr, &timer_sc);
 	mdx_intc_enable(&dev_nvic, 115);
 
-	/* Switch and enable power for PSRAM. */
+	/* Enable 1v8 power for PSRAM and NOR. */
 	stm32n6_pwr_init(&pwr_sc, PWR_BASE);
 	stm32n6_pwr_setup_vddio23_1v8(&pwr_sc);
 
@@ -262,7 +278,7 @@ board_init(void)
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
 	stm32n6_xspi_transfer(&xspi1_sc, 8, 0x0040, 2);
 
-	/* Reconfigure XSPI for memory-mapped mode. */
+	/* Reconfigure XSPI1 for memory-mapped mode. */
 	conf.instruction = 0;
 	conf.dqs_en = 1;
 	conf.dummy_cycles = 6; /* nb: 4 for 8 data lines */
@@ -271,6 +287,9 @@ board_init(void)
 	conf.instruction_read = APS256XX_READ_LINEAR_BURST_CMD;
 	conf.instruction_write = APS256XX_WRITE_LINEAR_BURST_CMD;
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
+
+	/* NOR Flash (Macronix MX66UW1G45G) */
+	stm32n6_xspi_init(&xspi2_sc, XSPI2_BASE);
 
 	/* AXISRAM unshutdown */
 	stm32n6_ramcfg_init(&ramcfg_sc, RAMCFG_BASE);
