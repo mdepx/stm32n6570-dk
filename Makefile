@@ -23,7 +23,7 @@ objdump:
 	${CROSS_COMPILE}objdump -S -d obj/${APP}.elf | less
 
 reset:
-	~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=1 -hardRST
+	~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=HOTPLUG ap=0 -hardRST
 
 clean:
 	@rm -rf obj/*
@@ -41,7 +41,7 @@ erase_all:
 run:	all
 	gdb-multiarch ./obj/${APP}.elf
 
-gdb-server:
+gdb-server:	reset
 	~/st/stm32cubeide_2.0.0/plugins/com.st.stm32cube.ide.mcu.externaltools.stlink-gdb-server.linux64_2.2.300.202509021040/tools/bin/ST-LINK_gdbserver -p 61234 -l 1 -d -s -cp ~/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/ -m 1 -g -i ${ADAPTOR_ID}
 
 dump_regs:
