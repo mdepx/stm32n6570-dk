@@ -38,6 +38,8 @@
 #include <arm/stm/stm32n6.h>
 #include <arm/arm/nvic.h>
 
+#include <dev/mx66uw/mx66uw.h>
+
 static struct stm32n6_rcc_softc rcc_sc;
 static struct stm32l4_usart_softc usart_sc;
 static struct stm32f4_timer_softc timer_sc;
@@ -49,7 +51,8 @@ static struct stm32f4_i2c_softc i2c1_sc;
 struct stm32f4_gpio_softc gpio_sc;
 static struct stm32n6_ltdc_softc ltdc_sc;
 static struct stm32n6_ramcfg_softc ramcfg_sc;
-static struct stm32n6_risaf_softc risaf11_sc;
+static struct stm32n6_risaf_softc risaf11_sc;	/* xspi 1 */
+static struct stm32n6_risaf_softc risaf12_sc;	/* xspi 2 */
 static struct stm32n6_risaf_softc risaf6_sc;
 struct stm32n6_dcmipp_softc dcmipp_sc;
 struct stm32n6_csi_softc csi_sc;
@@ -57,6 +60,7 @@ struct stm32n6_csi_softc csi_sc;
 static struct arm_nvic_softc nvic_sc;
 static struct mdx_device dev_nvic = { .sc = &nvic_sc };
 struct mdx_device dev_i2c1 = { .sc = &i2c1_sc };
+static struct mx66uw_softc mx66uw_sc;
 
 static struct layer_info info;
 
@@ -159,19 +163,18 @@ static const struct stm32_gpio_pin uart_pins[] = {
 	{ PORT_P, 15, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* IO15 */
 
 	/* XSPIM_P2 MX66UW1G45G */
-	{ PORT_N,  0, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* DQS0 */
-	{ PORT_N,  1, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* NCS1 */
-	{ PORT_N,  6, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* CLK */
-	{ PORT_N,  7, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* NCLK */
-
-	{ PORT_N,  2, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D0 */
-	{ PORT_N,  3, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D1 */
-	{ PORT_N,  4, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D2 */
-	{ PORT_N,  5, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D3 */
-	{ PORT_N,  8, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D4 */
-	{ PORT_N,  9, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D5 */
-	{ PORT_N, 10, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D6 */
-	{ PORT_N, 11, MODE_ALT, 9, OT_PP, OS_VH, FLOAT }, /* D7 */
+	{ PORT_N,  0, MODE_ALT, 9, OT_PP, OS_H, PULLUP }, /* DQS0 */
+	{ PORT_N,  1, MODE_ALT, 9, OT_PP, OS_H, PULLUP }, /* NCS1 */
+	{ PORT_N,  6, MODE_ALT, 9, OT_PP, OS_H, PULLUP }, /* CLK */
+	{ PORT_N,  7, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* NCLK (unused) */
+	{ PORT_N,  2, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D0 */
+	{ PORT_N,  3, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D1 */
+	{ PORT_N,  4, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D2 */
+	{ PORT_N,  5, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D3 */
+	{ PORT_N,  8, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D4 */
+	{ PORT_N,  9, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D5 */
+	{ PORT_N, 10, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D6 */
+	{ PORT_N, 11, MODE_ALT, 9, OT_PP, OS_H, FLOAT }, /* D7 */
 
 	/* imx335 camera module */
 	/*
@@ -270,18 +273,24 @@ board_init(void)
 	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
 	/* Read latency 7, up to 200MHz. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	stm32n6_xspi_transfer(&xspi1_sc, 0, 0x0030, 2);
+	uint8_t val[2];
+	val[0] = 0x30;
+	stm32n6_xspi_transmit(&xspi1_sc, 0, val, 2);
 	/* Write latency 7, up to 200MHz. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	stm32n6_xspi_transfer(&xspi1_sc, 4, 0x0020, 2);
+	val[0] = 0x20;
+	stm32n6_xspi_transmit(&xspi1_sc, 4, val, 2);
 	/* Switch to 16 data lines mode. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	stm32n6_xspi_transfer(&xspi1_sc, 8, 0x0040, 2);
+	val[0] = 0x40;
+	stm32n6_xspi_transmit(&xspi1_sc, 8, val, 2);
 
 	/* Reconfigure XSPI1 for memory-mapped mode. */
 	conf.instruction = 0;
 	conf.dqs_en = 1;
+	conf.wdqs_en = 1;
 	conf.dummy_cycles = 6; /* nb: 4 for 8 data lines */
+	conf.wdummy_cycles = 6;
 	conf.data_lines = 16;
 	conf.mode = XSPI_MODE_MEMORY_MAPPED;
 	conf.instruction_read = APS256XX_READ_LINEAR_BURST_CMD;
@@ -290,6 +299,7 @@ board_init(void)
 
 	/* NOR Flash (Macronix MX66UW1G45G) */
 	stm32n6_xspi_init(&xspi2_sc, XSPI2_BASE);
+	mx66uw_init(&mx66uw_sc, &xspi2_sc);
 
 	/* AXISRAM unshutdown */
 	stm32n6_ramcfg_init(&ramcfg_sc, RAMCFG_BASE);
@@ -300,16 +310,17 @@ board_init(void)
 
 	/* RISAFs Configuration */
 	stm32n6_risaf_init(&risaf11_sc, RISAF11_BASE);
+	stm32n6_risaf_init(&risaf12_sc, RISAF12_BASE);
 	stm32n6_risaf_init(&risaf6_sc, RISAF6_BASE);
 
 	/* RISAF11: peripherals to XSPI1 access (256mb) */
 	rconf.base_start = 0x90000000;
-	rconf.base_end = 0x91000000;
+	rconf.base_end = 0xa0000000;
 	rconf.base_cid_write = 0xff;
 	rconf.base_cid_read = 0xff;
 	rconf.base_sec = 0;
 	rconf.suba_start = 0x90000000;
-	rconf.suba_end = 0x91000000;
+	rconf.suba_end = 0xa0000000;
 	rconf.suba_rd = 1;
 	rconf.suba_wr = 1;
 	rconf.suba_cid = 0; /* All peripherals */
@@ -321,6 +332,26 @@ board_init(void)
 	rconf.suba_cid = 1;
 	rconf.suba_sec = 1;
 	stm32n6_risaf_setup(&risaf11_sc, 2, &rconf);
+
+	/* RISAF12: peripherals to XSPI2 access (128mb) */
+	rconf.base_start = 0x70000000;
+	rconf.base_end = 0x78000000;
+	rconf.base_cid_write = 0xff;
+	rconf.base_cid_read = 0xff;
+	rconf.base_sec = 0;
+	rconf.suba_start = 0x70000000;
+	rconf.suba_end = 0x78000000;
+	rconf.suba_rd = 1;
+	rconf.suba_wr = 1;
+	rconf.suba_cid = 0; /* All peripherals */
+	rconf.suba_sec = 0;
+	stm32n6_risaf_setup(&risaf12_sc, 1, &rconf);
+
+	/* RISAF12: CPU to XSPI2 access */
+	rconf.base_sec = 1;
+	rconf.suba_cid = 1;
+	rconf.suba_sec = 1;
+	stm32n6_risaf_setup(&risaf12_sc, 2, &rconf);
 
 	/* RISAF6: peripherals to AXISRAM3/4/5/6 access. */
 	rconf.base_start = 0x34200000;
