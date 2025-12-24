@@ -64,6 +64,19 @@ memtest(uint32_t addr, uint32_t len)
 	printf("Test OK\n");
 }
 
+static void
+flashtest(uint32_t addr, uint32_t len)
+{
+	int i;
+
+	printf("Accessing flash on read: ");
+
+	for (i = 0; i < len; i++)
+		printf("%x", *(uint8_t *)(addr + i));
+
+	printf("\n");
+}
+
 static void __unused
 memfill(uint32_t base)
 {
@@ -96,6 +109,7 @@ main(void)
 
 	memtest(0x90000000, 2048);
 	memtest(0x34200000, 2048);
+	flashtest(0x70000000, 16);
 
 	error = imx335_init(&dev_i2c1, 0x34);
 	if (error)
