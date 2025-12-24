@@ -203,6 +203,7 @@ board_init(void)
 	struct rcc_config cfg;
 	struct xspi_config conf;
 	struct risaf_config rconf;
+	uint8_t val[2];
 
 	bzero(&cfg, sizeof(struct rcc_config));
 	cfg.ahb4enr = AHB4ENSR_GPIOAEN | AHB4ENSR_GPIOBEN | AHB4ENSR_GPIOCEN |
@@ -273,7 +274,6 @@ board_init(void)
 	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
 	/* Read latency 7, up to 200MHz. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	uint8_t val[2];
 	val[0] = 0x30;
 	stm32n6_xspi_transmit(&xspi1_sc, 0, val, 2);
 	/* Write latency 7, up to 200MHz. */
