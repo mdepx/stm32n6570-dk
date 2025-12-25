@@ -43,8 +43,10 @@ npu_test(void)
 	printf("%s\n", __func__);
 
 	error = ll_aton_reloc_get_info((uintptr_t)0x70000000, &rt);
-	if (error)
+	if (error) {
+		printf("%s: error %d\n", __func__, error);
 		return (error);
+	}
 
 	LL_ATON_RT_RuntimeInit();
 
