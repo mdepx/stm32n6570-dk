@@ -32,23 +32,59 @@
 #include <lib/stnpu/ll_aton/ll_aton_platform.h>
 #include <lib/stnpu/ll_aton/ll_aton_reloc_network.h>
 
+#include <lib/stnpu/ll_aton/ll_aton_rt_user_api.h>
+LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(Default);
+
 #include "npu.h"
+
+static uint8_t *nn_in;
+
+#define	MAX_NUMBER_OUTPUT	5
+
+static void
+nn_init(uint32_t *nnin_length, float *nn_out[], int *number_output,
+    int32_t nn_out_len[])
+{
+	const LL_Buffer_InfoTypeDef *nn_in_info;
+	const LL_Buffer_InfoTypeDef *nn_out_info;
+
+	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_Default);
+	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_Default);
+
+	/* Input address. */
+	nn_in = (uint8_t *) LL_Buffer_addr_start(&nn_in_info[0]);
+
+	while (nn_out_info[*number_output].name != NULL)
+		(*number_output)++;
+
+	assert(*number_output <= MAX_NUMBER_OUTPUT);
+
+	for (int i = 0; i < *number_output; i++) {
+		/* Output address. */
+		nn_out[i] = (float *)LL_Buffer_addr_start(&nn_out_info[i]);
+		nn_out_len[i] = LL_Buffer_len(&nn_out_info[i]);
+	}
+
+	*nnin_length = LL_Buffer_len(&nn_in_info[0]);
+
+	LL_ATON_RT_RuntimeInit();
+	LL_ATON_RT_Init_Network(&NN_Instance_Default);
+}
 
 int
 npu_test(void)
 {
-	ll_aton_reloc_info rt;
-	int error;
+	float *nn_out[MAX_NUMBER_OUTPUT] = {0};
+	int32_t nn_out_len[MAX_NUMBER_OUTPUT] = {0};
+	uint32_t nn_in_len;
+	int number_output;
 
 	printf("%s\n", __func__);
 
-	error = ll_aton_reloc_get_info((uintptr_t)0x70000000, &rt);
-	if (error) {
-		printf("%s: error %d\n", __func__, error);
-		return (error);
-	}
+	nn_in_len = 0;
+	number_output = 0;
 
-	LL_ATON_RT_RuntimeInit();
+	nn_init(&nn_in_len, nn_out, &number_output, nn_out_len);
 
 	return (0);
 }

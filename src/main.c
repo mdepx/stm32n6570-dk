@@ -144,8 +144,7 @@ main(void)
 	memfill(0x90000000);
 #endif
 
-	if (1 == 0)
-		npu_test();
+	npu_test();
 
 	while (1) {
 		printf("%s: Hello World from n6\n", __func__);
