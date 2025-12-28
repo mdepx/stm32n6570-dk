@@ -71,6 +71,18 @@ nn_init(uint32_t *nnin_length, float *nn_out[], int *number_output,
 	LL_ATON_RT_Init_Network(&NN_Instance_Default);
 }
 
+void
+nn_pass(void)
+{
+	LL_ATON_RT_RetValues_t ll_aton_rt_ret;
+
+	do {
+		ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
+		if (ll_aton_rt_ret == LL_ATON_RT_WFE)
+			LL_ATON_OSAL_WFE();
+	} while (ll_aton_rt_ret != LL_ATON_RT_DONE);
+}
+
 int
 npu_test(void)
 {
@@ -85,6 +97,8 @@ npu_test(void)
 	number_output = 0;
 
 	nn_init(&nn_in_len, nn_out, &number_output, nn_out_len);
+	if (1 == 0)
+		nn_pass();
 
 	return (0);
 }

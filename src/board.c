@@ -96,6 +96,24 @@ uart_putchar(int c, void *arg)
 	stm32l4_usart_putc(sc, c);
 }
 
+void
+npu_intr_wrapper(void *arg, int irq_nr)
+{
+	void (*npu_intr_handler)(void);
+
+	npu_intr_handler = arg;
+	npu_intr_handler();
+
+	printf("%s: %d\n", __func__, irq_nr);
+}
+
+void
+npu_setup_irq(int irq_nr, void (*handler)(void))
+{
+
+	mdx_intc_setup(&dev_nvic, 53 + irq_nr, npu_intr_wrapper, handler);
+}
+
 static const struct stm32_gpio_pin uart_pins[] = {
 	{ PORT_E, 5, MODE_ALT, 7, OT_PP, OS_H, FLOAT }, /* VCP USART1_TX */
 	{ PORT_E, 6, MODE_ALT, 7, OT_PP, OS_H, FLOAT }, /* VCP USART1_RX */
