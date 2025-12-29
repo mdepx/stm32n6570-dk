@@ -33,7 +33,7 @@
 #include <lib/stnpu/ll_aton/ll_aton_reloc_network.h>
 
 #include <lib/stnpu/ll_aton/ll_aton_rt_user_api.h>
-LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(Default);
+LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(network);
 
 #include "npu.h"
 
@@ -48,11 +48,13 @@ nn_init(uint32_t *nnin_length, float *nn_out[], int *number_output,
 	const LL_Buffer_InfoTypeDef *nn_in_info;
 	const LL_Buffer_InfoTypeDef *nn_out_info;
 
-	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_Default);
-	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_Default);
+	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_network);
+	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_network);
 
 	/* Input address. */
 	nn_in = (uint8_t *) LL_Buffer_addr_start(&nn_in_info[0]);
+
+	printf("nn in %p\n", nn_in);
 
 	while (nn_out_info[*number_output].name != NULL)
 		(*number_output)++;
@@ -68,7 +70,7 @@ nn_init(uint32_t *nnin_length, float *nn_out[], int *number_output,
 	*nnin_length = LL_Buffer_len(&nn_in_info[0]);
 
 	LL_ATON_RT_RuntimeInit();
-	LL_ATON_RT_Init_Network(&NN_Instance_Default);
+	LL_ATON_RT_Init_Network(&NN_Instance_network);
 }
 
 void
@@ -77,7 +79,7 @@ nn_pass(void)
 	LL_ATON_RT_RetValues_t ll_aton_rt_ret;
 
 	do {
-		ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_Default);
+		ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_network);
 		if (ll_aton_rt_ret == LL_ATON_RT_WFE)
 			LL_ATON_OSAL_WFE();
 	} while (ll_aton_rt_ret != LL_ATON_RT_DONE);
