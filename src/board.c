@@ -103,8 +103,6 @@ npu_intr_wrapper(void *arg, int irq_nr)
 
 	npu_intr_handler = arg;
 	npu_intr_handler();
-
-	printf("%s: %d\n", __func__, irq_nr);
 }
 
 void
@@ -424,14 +422,17 @@ board_init(void)
 	mdx_intc_setup(&dev_nvic, 100, stm32f4_i2c_intr, &i2c1_sc);
 	mdx_intc_enable(&dev_nvic, 100);
 
+#define	IMX_WIDTH	2592
+#define	IMX_HEIGHT	1944
+
 	/* DCMIPP and CSI-2 */
 	struct stm32n6_dcmipp_downsize_config dconf;
-	dconf.hratio		= 25656;
-	dconf.vratio		= 33161;
 	dconf.hsize		= 800;
 	dconf.vsize		= 480;
-	dconf.hdivfactor	= 316;
-	dconf.vdivfactor	= 253;
+	dconf.hratio		= (IMX_WIDTH * 8192) / dconf.hsize;
+	dconf.vratio		= (IMX_HEIGHT * 8192) / dconf.vsize;
+	dconf.hdivfactor	= (1024 * 8192 - 1) / dconf.hratio;
+	dconf.vdivfactor	= (1024 * 8192 - 1) / dconf.vratio;
 
 	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
 	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, &dconf);
