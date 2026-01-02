@@ -30,7 +30,6 @@
 
 #include <lib/stnpu/ll_aton/ll_aton_runtime.h>
 #include <lib/stnpu/ll_aton/ll_aton_platform.h>
-#include <lib/stnpu/ll_aton/ll_aton_reloc_network.h>
 
 #include <lib/stnpu/ll_aton/ll_aton_rt_user_api.h>
 LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(network);
@@ -42,17 +41,18 @@ static uint8_t *nn_in;
 #define	MAX_NUMBER_OUTPUT	5
 
 static void
-nn_init(uint32_t *nnin_length, float *nn_out[], int *number_output,
-    int32_t nn_out_len[])
+nn_init(uint32_t *nnin_length, uint32_t *nn_out[], int *number_output,
+    uint32_t nn_out_len[])
 {
 	const LL_Buffer_InfoTypeDef *nn_in_info;
 	const LL_Buffer_InfoTypeDef *nn_out_info;
+	int i;
 
 	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_network);
 	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_network);
 
 	/* Input address. */
-	nn_in = (uint8_t *) LL_Buffer_addr_start(&nn_in_info[0]);
+	nn_in = (uint8_t *)LL_Buffer_addr_start(&nn_in_info[0]);
 
 	printf("nn in %p\n", nn_in);
 
@@ -61,10 +61,12 @@ nn_init(uint32_t *nnin_length, float *nn_out[], int *number_output,
 
 	assert(*number_output <= MAX_NUMBER_OUTPUT);
 
-	for (int i = 0; i < *number_output; i++) {
+	for (i = 0; i < *number_output; i++) {
 		/* Output address. */
-		nn_out[i] = (float *)LL_Buffer_addr_start(&nn_out_info[i]);
+		nn_out[i] = (uint32_t *)LL_Buffer_addr_start(&nn_out_info[i]);
 		nn_out_len[i] = LL_Buffer_len(&nn_out_info[i]);
+		printf("%s: out %d: %p len %d\n", __func__, i, nn_out[i],
+		    nn_out_len[i]);
 	}
 
 	*nnin_length = LL_Buffer_len(&nn_in_info[0]);
@@ -83,24 +85,37 @@ nn_pass(void)
 		if (ll_aton_rt_ret == LL_ATON_RT_WFE)
 			LL_ATON_OSAL_WFE();
 	} while (ll_aton_rt_ret != LL_ATON_RT_DONE);
+
+	LL_ATON_RT_Reset_Network(&NN_Instance_network);
 }
 
 int
 npu_test(void)
 {
-	float *nn_out[MAX_NUMBER_OUTPUT] = {0};
-	int32_t nn_out_len[MAX_NUMBER_OUTPUT] = {0};
+	uint32_t *nn_out[MAX_NUMBER_OUTPUT] = {0};
+	uint32_t nn_out_len[MAX_NUMBER_OUTPUT] = {0};
 	uint32_t nn_in_len;
 	int number_output;
-
-	printf("%s\n", __func__);
+	int i;
+	int j;
 
 	nn_in_len = 0;
 	number_output = 0;
 
 	nn_init(&nn_in_len, nn_out, &number_output, nn_out_len);
-	if (1 == 0)
+
+	printf("%s: nn len %d\n", __func__, nn_in_len);
+
+	i = 0;
+	while (1) {
 		nn_pass();
+
+		printf("pass %d ok\n", i++);
+
+		for (j = 0; j < number_output; j++)
+			SCB_InvalidateDCache_by_Addr(nn_out[j], nn_out_len[j]);
+		break;
+	}
 
 	return (0);
 }
