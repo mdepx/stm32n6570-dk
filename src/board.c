@@ -112,8 +112,6 @@ npu_intr_wrapper(void *arg, int irq_nr)
 {
 	void (*npu_intr_handler)(void);
 
-	//printf(".");
-
 	npu_intr_handler = arg;
 	npu_intr_handler();
 }
@@ -122,7 +120,7 @@ void
 npu_setup_irq(int irq_nr, void (*handler)(void))
 {
 
-printf("%s: %d\n", __func__, irq_nr);
+	printf("%s: %d\n", __func__, irq_nr);
 
 	mdx_intc_setup(&dev_nvic, 53 + irq_nr, npu_intr_wrapper, handler);
 }
@@ -231,9 +229,10 @@ static const struct stm32_gpio_pin uart_pins[] = {
 void
 board_init(void)
 {
-	struct rcc_config cfg;
-	struct xspi_config conf;
 	struct risaf_config rconf;
+	struct xspi_config conf;
+	struct rcc_config cfg;
+	uint8_t val[2];
 
 	bzero(&cfg, sizeof(struct rcc_config));
 	cfg.ahb4enr = AHB4ENSR_GPIOAEN | AHB4ENSR_GPIOBEN | AHB4ENSR_GPIOCEN |
@@ -301,8 +300,6 @@ board_init(void)
 	conf.instruction_size = 8;
 	conf.instruction = APS256XX_WRITE_REG_CMD;
 	conf.mode = XSPI_MODE_INDIRECT_WRITE;
-
-	uint8_t val[2];
 
 	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
 
@@ -550,8 +547,8 @@ board_init(void)
 	dconf.vdivfactor	= (1024 / (IMX_HEIGHT / dconf.vsize));
 	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, 1, &dconf);
 
-	dconf.hsize		= 512;
-	dconf.vsize		= 512;
+	dconf.hsize		= 480;
+	dconf.vsize		= 480;
 	dconf.hratio		= ((IMX_WIDTH - 1) * 8192) / (dconf.hsize - 1);
 	dconf.vratio		= ((IMX_HEIGHT- 1) * 8192) / (dconf.vsize - 1);
 	dconf.hdivfactor	= (1024 / (IMX_WIDTH / dconf.hsize));
