@@ -19,7 +19,7 @@ Note this project uses MDEPX RTOS which replaces STM32 HAL in full.
 ### Flash network data
     $ make flash-network-data
 
-### Run GDB server
+### Run GDB server (in a separate terminal)
     $ ./gdb-server.sh
 
 ### Place the binary into SRAM and run
