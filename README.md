@@ -25,5 +25,5 @@ This project runs directly from SRAM (no secure boot) which aim to ease developm
 ### Place the binary into SRAM and run
     $ make run
 
-![n6dk](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/mdepx-camera.jpg)
+![n6dk](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/yolox.jpg)
 ![n6dk dev mode](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/n6dk_devmode.jpg)
