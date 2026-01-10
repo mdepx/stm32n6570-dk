@@ -32,11 +32,15 @@
 #include <lib/stnpu/ll_aton/ll_aton_platform.h>
 
 #include <lib/stnpu/ll_aton/ll_aton_rt_user_api.h>
-LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(network);
+LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(face_detector);
 
 #include "npu.h"
+#include "yolox.h"
+#include "blazeface.h"
 
 static uint8_t *nn_in;
+
+extern struct stm32n6_dcmipp_softc dcmipp_sc;
 
 #define	MAX_NUMBER_OUTPUT	5
 
@@ -48,8 +52,8 @@ nn_init(uint32_t *nnin_length, uint32_t *nn_out[], int *number_output,
 	const LL_Buffer_InfoTypeDef *nn_out_info;
 	int i;
 
-	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_network);
-	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_network);
+	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_face_detector);
+	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_face_detector);
 
 	/* Input address. */
 	nn_in = (uint8_t *)LL_Buffer_addr_start(&nn_in_info[0]);
@@ -67,12 +71,18 @@ nn_init(uint32_t *nnin_length, uint32_t *nn_out[], int *number_output,
 		nn_out_len[i] = LL_Buffer_len(&nn_out_info[i]);
 		printf("%s: out %d: %p len %d\n", __func__, i, nn_out[i],
 		    nn_out_len[i]);
+#if 1
+		uint8_t *addr = (uint8_t *)nn_out[i];
+		int j;
+		for (j = 0; j < nn_out_len[i]; j++)
+			addr[j] = 0;
+#endif
 	}
 
 	*nnin_length = LL_Buffer_len(&nn_in_info[0]);
 
 	LL_ATON_RT_RuntimeInit();
-	LL_ATON_RT_Init_Network(&NN_Instance_network);
+	LL_ATON_RT_Init_Network(&NN_Instance_face_detector);
 }
 
 void
@@ -81,13 +91,17 @@ nn_pass(void)
 	LL_ATON_RT_RetValues_t ll_aton_rt_ret;
 
 	do {
-		ll_aton_rt_ret = LL_ATON_RT_RunEpochBlock(&NN_Instance_network);
-		if (ll_aton_rt_ret == LL_ATON_RT_WFE)
-			LL_ATON_OSAL_WFE();
+		ll_aton_rt_ret = \
+		    LL_ATON_RT_RunEpochBlock(&NN_Instance_face_detector);
+		if (ll_aton_rt_ret == LL_ATON_RT_WFE) {
+			/* Wait for event here. */
+		}
 	} while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
-	LL_ATON_RT_Reset_Network(&NN_Instance_network);
+	LL_ATON_RT_Reset_Network(&NN_Instance_face_detector);
 }
+
+void stm32n6_dcmipp_pipe2_frame_request(struct stm32n6_dcmipp_softc *, int p);
 
 int
 npu_test(void)
@@ -96,25 +110,39 @@ npu_test(void)
 	uint32_t nn_out_len[MAX_NUMBER_OUTPUT] = {0};
 	uint32_t nn_in_len;
 	int number_output;
-	int i;
 	int j;
 
 	nn_in_len = 0;
 	number_output = 0;
 
 	nn_init(&nn_in_len, nn_out, &number_output, nn_out_len);
+#if 0
+	yolox_init(&NN_Instance_face_detector);
+#else
+	blazeface_init(&NN_Instance_face_detector);
+#endif
 
-	printf("%s: nn len %d\n", __func__, nn_in_len);
+	LL_ATON_Set_User_Input_Buffer_face_detector(0, (void *)0x34200000,
+	    nn_in_len);
+	nn_in = (void *)0x34200000;
 
-	i = 0;
+	printf("%s: nn in %p len %d\n", __func__, nn_in, nn_in_len);
+
 	while (1) {
-		nn_pass();
+		stm32n6_dcmipp_pipe2_frame_request(&dcmipp_sc, 2);
 
-		printf("pass %d ok\n", i++);
+		SCB_InvalidateDCache_by_Addr(nn_in, nn_in_len);
+
+		nn_pass();
 
 		for (j = 0; j < number_output; j++)
 			SCB_InvalidateDCache_by_Addr(nn_out[j], nn_out_len[j]);
-		break;
+
+#if 0
+		yolox_process(nn_out);
+#else
+		blazeface_process(nn_out);
+#endif
 	}
 
 	return (0);

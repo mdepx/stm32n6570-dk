@@ -27,5 +27,8 @@
 #define	_SRC_NPU_H_
 
 int npu_test(void);
+void write_hline(int x, int y, int len);
+void write_vline(int x, int y, int len);
+void layer2_clear(void);
 
 #endif /* !_SRC_NPU_H_ */
