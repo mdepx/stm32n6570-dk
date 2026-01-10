@@ -8,6 +8,8 @@ This project runs directly from SRAM (no secure boot) which aim to ease developm
 
 Note this project uses MDEPX RTOS which replaces STM32 HAL in full.
 
+NPU input picture: 480x480x3 on Pipe2.
+
 ### Set up compiler
     $ sudo apt install gcc-arm-none-eabi
 
