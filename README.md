@@ -4,9 +4,9 @@ This project aims to evaluate the camera IP and NPU included into stm32n6 SoC fr
 
 Current status: Peripherals initialized, the YOLOX object detector model implemented.
 
-This project does not use STM32 HAL.
-
 This project runs directly from SRAM (no secure boot) which aim to ease development workflow. Enable developer mode by switching the BOOT1 jumper to the HIGH position.
+
+Note this project uses MDEPX RTOS which replaces STM32 HAL in full.
 
 ### Set up compiler
     $ sudo apt install gcc-arm-none-eabi
