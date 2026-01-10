@@ -78,6 +78,8 @@ static struct layer_info info[2];
 
 #define	IMX335_RAW10	0x2B
 #define	IMX335_RAW12	0x2C
+#define	IMX_WIDTH	2592
+#define	IMX_HEIGHT	1944
 
 #define	MAX(a,b)	(((a)>(b))?(a):(b))
 
@@ -533,9 +535,6 @@ board_init(void)
 	stm32f4_i2c_init(&dev_i2c1, I2C1_BASE);	/* imx335 */
 	mdx_intc_setup(&dev_nvic, 100, stm32f4_i2c_intr, &i2c1_sc);
 	mdx_intc_enable(&dev_nvic, 100);
-
-#define	IMX_WIDTH	2592
-#define	IMX_HEIGHT	1944
 
 	/* DCMIPP */
 	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
