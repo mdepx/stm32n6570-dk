@@ -2,7 +2,7 @@
 
 This project aims to evaluate the camera IP and NPU included into stm32n6 SoC from ST-Microelectronics.
 
-Current status: Peripherals initialized, the BlazeFace face detector model implemented.
+Current status: Peripherals initialized, the YOLOX object detector model implemented.
 
 This project does not use STM32 HAL.
 
@@ -15,6 +15,9 @@ This project runs directly from SRAM (no secure boot) which aim to ease developm
     $ git clone --recursive https://github.com/mdepx/stm32n6570-dk
     $ cd stm32n6570-dk
     $ make clean all
+
+### Flash network data
+    $ make flash-network-data
 
 ### Run GDB server
     $ ./gdb-server.sh

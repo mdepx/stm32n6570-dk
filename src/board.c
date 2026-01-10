@@ -491,7 +491,7 @@ board_init(void)
 	info[0].vbp = 8;
 	info[0].hbp = 8;
 	info[0].bpp = 16;
-	info[0].base = 0x34200000; /* AXISRAM3 Pipe1 */
+	info[0].base = 0x34200000; /* AXISRAM3 Pipe2 */
 	info[0].base = 0x91000000; /* External PSRAM */
 	info[0].alpha = 0xff;
 
@@ -499,7 +499,6 @@ board_init(void)
 	info[0].height = 128;
 	info[0].width = 128;
 	info[0].bpp = 24;
-	info[0].base = 0x91200000;	/* AXISRAM5 Pipe2 */
 	info[0].base = 0x34200000;	/* AXISRAM5 Pipe2 */
 #endif
 
@@ -576,13 +575,13 @@ board_init(void)
 	stm32n6_dcmipp_setup(&dcmipp_sc, &pconf);
 
 	pconf.pipe_id = 2;
-	pconf.pitch = 128 * 3;
+	pconf.pitch = 480 * 3;
 	pconf.gamma_en = 0;
 	pconf.vc = 0;
 	pconf.flow_type = DCMIPP_FLOW_TYPE_SNAPSHOT;
 	pconf.base_addr = 0x34200000;
 	pconf.format = DCMIPP_FORMAT_RGB888;
-	pconf.decimation = 1;
+	pconf.decimation = 0;
 	pconf.debayer = 0;
 	pconf.black_level_calibration = 0;
 	pconf.color_conv = 0;

@@ -119,6 +119,8 @@ yolox_process(uint32_t **inputs)
 
 	layer2_clear();
 	for (i = 0; i < pp_params.nb_detect; i++) {
+		if (rois[i].conf == 0)
+			continue;
 		printf("%s: x_center %.08f width %.08f\n", __func__,
 		    rois[i].x_center, rois[i].width);
 		x0 = (uint32_t) ((rois[i].x_center - rois[i].width / 2) *
@@ -128,13 +130,11 @@ yolox_process(uint32_t **inputs)
 		width = (uint32_t) (rois[i].width * lcd_xsize);
 		height = (uint32_t) (rois[i].height * lcd_ysize);
 		printf("Box%d: %d x %d, %d %d\n", i, x0, y0, width, height);
-#if 0
+		if (width == 0 || height == 0)
+			continue;
 		write_hline(x0, y0, width);
 		write_hline(x0, y0 + height, width);
-#endif
-
-		x0 = (uint32_t) (rois[i].x_center * lcd_xsize);
-		y0 = (uint32_t) (rois[i].y_center * lcd_ysize);
-		write_hline(x0, y0, 5);
+		write_vline(x0, y0, height);
+		write_vline(x0 + width, y0, height);
 	}
 }

@@ -32,7 +32,7 @@
 #include <lib/stnpu/ll_aton/ll_aton_platform.h>
 
 #include <lib/stnpu/ll_aton/ll_aton_rt_user_api.h>
-LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(face_detector);
+LL_ATON_DECLARE_NAMED_NN_INSTANCE_AND_INTERFACE(network);
 
 #include "npu.h"
 #include "yolox.h"
@@ -52,8 +52,8 @@ nn_init(uint32_t *nnin_length, uint32_t *nn_out[], int *number_output,
 	const LL_Buffer_InfoTypeDef *nn_out_info;
 	int i;
 
-	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_face_detector);
-	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_face_detector);
+	nn_in_info = LL_ATON_Input_Buffers_Info(&NN_Instance_network);
+	nn_out_info = LL_ATON_Output_Buffers_Info(&NN_Instance_network);
 
 	/* Input address. */
 	nn_in = (uint8_t *)LL_Buffer_addr_start(&nn_in_info[0]);
@@ -82,7 +82,7 @@ nn_init(uint32_t *nnin_length, uint32_t *nn_out[], int *number_output,
 	*nnin_length = LL_Buffer_len(&nn_in_info[0]);
 
 	LL_ATON_RT_RuntimeInit();
-	LL_ATON_RT_Init_Network(&NN_Instance_face_detector);
+	LL_ATON_RT_Init_Network(&NN_Instance_network);
 }
 
 void
@@ -92,13 +92,13 @@ nn_pass(void)
 
 	do {
 		ll_aton_rt_ret = \
-		    LL_ATON_RT_RunEpochBlock(&NN_Instance_face_detector);
+		    LL_ATON_RT_RunEpochBlock(&NN_Instance_network);
 		if (ll_aton_rt_ret == LL_ATON_RT_WFE) {
 			/* Wait for event here. */
 		}
 	} while (ll_aton_rt_ret != LL_ATON_RT_DONE);
 
-	LL_ATON_RT_Reset_Network(&NN_Instance_face_detector);
+	LL_ATON_RT_Reset_Network(&NN_Instance_network);
 }
 
 void stm32n6_dcmipp_pipe2_frame_request(struct stm32n6_dcmipp_softc *, int p);
@@ -116,13 +116,13 @@ npu_test(void)
 	number_output = 0;
 
 	nn_init(&nn_in_len, nn_out, &number_output, nn_out_len);
-#if 0
-	yolox_init(&NN_Instance_face_detector);
+#if 1
+	yolox_init(&NN_Instance_network);
 #else
-	blazeface_init(&NN_Instance_face_detector);
+	blazeface_init(&NN_Instance_network);
 #endif
 
-	LL_ATON_Set_User_Input_Buffer_face_detector(0, (void *)0x34200000,
+	LL_ATON_Set_User_Input_Buffer_network(0, (void *)0x34200000,
 	    nn_in_len);
 	nn_in = (void *)0x34200000;
 
@@ -138,7 +138,7 @@ npu_test(void)
 		for (j = 0; j < number_output; j++)
 			SCB_InvalidateDCache_by_Addr(nn_out[j], nn_out_len[j]);
 
-#if 0
+#if 1
 		yolox_process(nn_out);
 #else
 		blazeface_process(nn_out);
