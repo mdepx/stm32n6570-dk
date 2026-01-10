@@ -26,13 +26,13 @@
 MEMORY
 {
 	/* Secure AXI SRAM1 bank. */
-	sram1 (rwx) : ORIGIN = 0x34120000, LENGTH = 1024K - 128K
+	sram1 (rwx) : ORIGIN = 0x34104000, LENGTH = 1024K - 16K
 }
 
 ENTRY(__start)
 SECTIONS
 {
-	. = 0x34120000;
+	. = 0x34104000;
 	.start . : {
 		*start.o(.text)
 	} > sram1

@@ -54,6 +54,10 @@ static struct stm32n6_ramcfg_softc ramcfg_sc;
 static struct stm32n6_risaf_softc risaf11_sc;	/* xspi 1 */
 static struct stm32n6_risaf_softc risaf12_sc;	/* xspi 2 */
 static struct stm32n6_risaf_softc risaf6_sc;
+static struct stm32n6_risaf_softc risaf2_sc;	/* cpu AXISRAM1 */
+static struct stm32n6_risaf_softc risaf3_sc;	/* cpu AXISRAM2 */
+static struct stm32n6_risaf_softc risaf4_sc;	/* npu master 0 */
+static struct stm32n6_risaf_softc risaf5_sc;	/* npu master 1 */
 struct stm32n6_dcmipp_softc dcmipp_sc;
 struct stm32n6_csi_softc csi_sc;
 
@@ -62,7 +66,7 @@ static struct mdx_device dev_nvic = { .sc = &nvic_sc };
 struct mdx_device dev_i2c1 = { .sc = &i2c1_sc };
 static struct mx66uw_softc mx66uw_sc;
 
-static struct layer_info info;
+static struct layer_info info[2];
 
 #define	APS256XX_READ_CMD		0x00
 #define	APS256XX_READ_LINEAR_BURST_CMD	0x20
@@ -71,6 +75,11 @@ static struct layer_info info;
 #define	APS256XX_RESET_CMD		0xFF
 #define	APS256XX_READ_REG_CMD		0x40
 #define	APS256XX_WRITE_REG_CMD		0xC0
+
+#define	IMX335_RAW10	0x2B
+#define	IMX335_RAW12	0x2C
+
+#define	MAX(a,b)	(((a)>(b))?(a):(b))
 
 void
 udelay(uint32_t usec)
@@ -101,6 +110,8 @@ npu_intr_wrapper(void *arg, int irq_nr)
 {
 	void (*npu_intr_handler)(void);
 
+	//printf(".");
+
 	npu_intr_handler = arg;
 	npu_intr_handler();
 }
@@ -108,6 +119,8 @@ npu_intr_wrapper(void *arg, int irq_nr)
 void
 npu_setup_irq(int irq_nr, void (*handler)(void))
 {
+
+printf("%s: %d\n", __func__, irq_nr);
 
 	mdx_intc_setup(&dev_nvic, 53 + irq_nr, npu_intr_wrapper, handler);
 }
@@ -119,41 +132,41 @@ static const struct stm32_gpio_pin uart_pins[] = {
 	{ PORT_F, 6, MODE_ALT, 7, OT_PP, OS_H, FLOAT }, /* D0 USART2_RX */
 
 	/* ROCKTEK RK050HR18-CTG */
-	{ PORT_G,  0, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R0 */
-	{ PORT_D,  9, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R1 */
-	{ PORT_D, 15, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R2 */
-	{ PORT_B,  4, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R3 */
-	{ PORT_H,  4, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R4 */
-	{ PORT_A, 15, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R5 */
-	{ PORT_G, 11, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R6 */
-	{ PORT_D,  8, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* R7 */
+	{ PORT_G,  0, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R0 */
+	{ PORT_D,  9, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R1 */
+	{ PORT_D, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R2 */
+	{ PORT_B,  4, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R3 */
+	{ PORT_H,  4, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R4 */
+	{ PORT_A, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R5 */
+	{ PORT_G, 11, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R6 */
+	{ PORT_D,  8, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* R7 */
 
-	{ PORT_G, 12, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G0 */
-	{ PORT_G,  1, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G1 */
-	{ PORT_A,  1, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G2 */
-	{ PORT_A,  0, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G3 */
-	{ PORT_B, 15, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G4 */
-	{ PORT_B, 12, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G5 */
-	{ PORT_B, 11, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G6 */
-	{ PORT_G,  8, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* G7 */
+	{ PORT_G, 12, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G0 */
+	{ PORT_G,  1, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G1 */
+	{ PORT_A,  1, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G2 */
+	{ PORT_A,  0, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G3 */
+	{ PORT_B, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G4 */
+	{ PORT_B, 12, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G5 */
+	{ PORT_B, 11, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G6 */
+	{ PORT_G,  8, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* G7 */
 
-	{ PORT_G, 15, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B0 */
-	{ PORT_A,  7, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B1 */
-	{ PORT_B,  2, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B2 */
-	{ PORT_G,  6, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B3 */
-	{ PORT_H,  3, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B4 */
-	{ PORT_H,  6, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B5 */
-	{ PORT_A,  8, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B6 */
-	{ PORT_A,  2, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* B7 */
+	{ PORT_G, 15, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B0 */
+	{ PORT_A,  7, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B1 */
+	{ PORT_B,  2, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B2 */
+	{ PORT_G,  6, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B3 */
+	{ PORT_H,  3, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B4 */
+	{ PORT_H,  6, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B5 */
+	{ PORT_A,  8, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B6 */
+	{ PORT_A,  2, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* B7 */
 
-	{ PORT_G, 13, MODE_OUT,  0, OT_PP, OS_VH, FLOAT }, /* LCD_DE */
-	{ PORT_Q,  3, MODE_OUT,  0, OT_PP, OS_VH, FLOAT }, /* LCD_ON/OFF */
-	{ PORT_B, 14, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* LCD_HSYNC */
-	{ PORT_E, 11, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* LCD_VSYNC */
-	{ PORT_B, 13, MODE_ALT, 14, OT_PP, OS_VH, FLOAT }, /* LCD_CLK */
-	{ PORT_Q,  4, MODE_INP,  0, OT_PP, OS_VH, PULLUP }, /* LCD_INT */
-	{ PORT_Q,  6, MODE_OUT,  0, OT_PP, OS_VH, FLOAT }, /* LCD_BL_CTRL */
-	{ PORT_E,  1, MODE_OUT,  0, OT_PP, OS_VH, FLOAT }, /* NRST */
+	{ PORT_G, 13, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* LCD_DE */
+	{ PORT_Q,  3, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* LCD_ON/OFF */
+	{ PORT_B, 14, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* LCD_HSYNC */
+	{ PORT_E, 11, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* LCD_VSYNC */
+	{ PORT_B, 13, MODE_ALT, 14, OT_PP, OS_H, FLOAT }, /* LCD_CLK */
+	{ PORT_Q,  4, MODE_INP,  0, OT_PP, OS_H, PULLUP }, /* LCD_INT */
+	{ PORT_Q,  6, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* LCD_BL_CTRL */
+	{ PORT_E,  1, MODE_OUT,  0, OT_PP, OS_H, FLOAT }, /* NRST */
 
 	/* XSPIM_P1 APS256XXN-OBR-BG */
 	{ PORT_O,  0, MODE_ALT, 9, OT_PP, OS_VH, PULLUP }, /* NCS1 */
@@ -219,7 +232,6 @@ board_init(void)
 	struct rcc_config cfg;
 	struct xspi_config conf;
 	struct risaf_config rconf;
-	uint8_t val[2];
 
 	bzero(&cfg, sizeof(struct rcc_config));
 	cfg.ahb4enr = AHB4ENSR_GPIOAEN | AHB4ENSR_GPIOBEN | AHB4ENSR_GPIOCEN |
@@ -228,7 +240,7 @@ board_init(void)
 	    AHB4ENSR_GPIOOEN | AHB4ENSR_GPIOPEN | AHB4ENSR_GPIOQEN |
 	    AHB4ENSR_PWREN;
 	cfg.ahb5enr = AHB5ENSR_NPUENS | AHB5ENSR_CACHEAXIENS |
-	    AHB5ENSR_GPU2DENS | AHB5ENSR_GFXMMUENS | AHB5ENSR_XSPI3ENS |
+	    AHB5ENSR_GPU2DENS | AHB5ENSR_GFXMMUENS | //| AHB5ENSR_XSPI3ENS |
 	    AHB5ENSR_XSPIMENS | AHB5ENSR_XSPI2ENS | AHB5ENSR_XSPI1ENS |
 	    AHB5ENSR_FMCENS | AHB5ENSR_JPEGENS | AHB5ENSR_DMA2DENS;
 	cfg.apb1lenr = APB1LENSR_UART5ENS | APB1LENSR_USART2ENS |
@@ -252,15 +264,15 @@ board_init(void)
 	pin_configure(&gpio_sc, uart_pins);
 
 	/* USART */
-	stm32l4_usart_init(&usart_sc, USART1_BASE, 150000000, 115200);
+	stm32l4_usart_init(&usart_sc, USART1_BASE, 200000000, 115200);
 	mdx_console_register(uart_putchar, (void *)&usart_sc);
 
 	/* NVIC */
 	arm_nvic_init(&dev_nvic, NVIC_BASE);
-	*(volatile uint32_t *)0xe000ed08 = 0x34120000; /* Setup VTOR. */
+	*(volatile uint32_t *)0xe000ed08 = 0x34104000; /* Setup VTOR. */
 
 	/* TIMER */
-	stm32f4_timer_init(&timer_sc, TIM1_BASE, 150000000);
+	stm32f4_timer_init(&timer_sc, TIM1_BASE, 200000000);
 	mdx_intc_setup(&dev_nvic, 115, stm32f4_timer_intr, &timer_sc);
 	mdx_intc_enable(&dev_nvic, 115);
 
@@ -271,11 +283,12 @@ board_init(void)
 	/* PSRAM */
 	bzero(&conf, sizeof(struct xspi_config));
 	conf.dummy_cycles = 0;
-	conf.prescaler = 0;
+	conf.wdummy_cycles = 0;
+	conf.prescaler = 3;
 	conf.dqs_en = 0;
 	conf.mem_type = DCR1_MTYP_AP;
-	conf.dev_size = DCR1_DEVSIZE_256M;
-	conf.cs_cycles = 6;
+	conf.dev_size = DCR1_DEVSIZE_32M;
+	conf.cs_cycles = 4;
 	conf.data_dtr = 1;
 	conf.data_lines = 8;
 	conf.address_dtr = 1;
@@ -287,23 +300,32 @@ board_init(void)
 	conf.instruction = APS256XX_WRITE_REG_CMD;
 	conf.mode = XSPI_MODE_INDIRECT_WRITE;
 
+	uint8_t val[2];
+
 	stm32n6_xspi_init(&xspi1_sc, XSPI1_BASE);
+
 	/* Read latency 7, up to 200MHz. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
-	val[0] = 0x30;
+	val[0] = 0x10 | 0x20;
+	val[1] = 0;
 	stm32n6_xspi_transmit(&xspi1_sc, 0, val, 2);
+
 	/* Write latency 7, up to 200MHz. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
 	val[0] = 0x20;
+	val[1] = 0;
 	stm32n6_xspi_transmit(&xspi1_sc, 4, val, 2);
+
 	/* Switch to 16 data lines mode. */
 	stm32n6_xspi_setup(&xspi1_sc, &conf);
 	val[0] = 0x40;
+	val[1] = 0;
 	stm32n6_xspi_transmit(&xspi1_sc, 8, val, 2);
 
 	/* Reconfigure XSPI1 for memory-mapped mode. */
 	conf.instruction = 0;
 	conf.dqs_en = 1;
+	conf.prescaler = 0;
 	conf.wdqs_en = 1;
 	conf.dummy_cycles = 6; /* nb: 4 for 8 data lines */
 	conf.wdummy_cycles = 6;
@@ -325,18 +347,85 @@ board_init(void)
 	stm32n6_ramcfg_shutdown(&ramcfg_sc, 6, 0);
 
 	/* RISAFs Configuration */
+	stm32n6_risaf_init(&risaf2_sc, RISAF2_BASE);
+	stm32n6_risaf_init(&risaf3_sc, RISAF3_BASE);
+	stm32n6_risaf_init(&risaf4_sc, RISAF4_BASE);
+	stm32n6_risaf_init(&risaf5_sc, RISAF5_BASE);
+	stm32n6_risaf_init(&risaf6_sc, RISAF6_BASE);
 	stm32n6_risaf_init(&risaf11_sc, RISAF11_BASE);
 	stm32n6_risaf_init(&risaf12_sc, RISAF12_BASE);
-	stm32n6_risaf_init(&risaf6_sc, RISAF6_BASE);
 
-	/* RISAF11: peripherals to XSPI1 access (256mb) */
+	/* RISAF3: CPU to AXISRAM2 */
+	rconf.base_start = 0x34100000;
+	rconf.base_end = 0x34200000 - 1;
+	rconf.base_cid_write = 0xff;
+	rconf.base_cid_read = 0xff;
+	rconf.base_sec = 1;
+	rconf.suba_start = 0x34100000;
+	rconf.suba_end = 0x34200000 - 1;
+	rconf.suba_rd = 1;
+	rconf.suba_wr = 1;
+	rconf.suba_cid = 1;
+	rconf.suba_sec = 1;
+	stm32n6_risaf_setup(&risaf3_sc, 1, &rconf);
+
+	/* RISAF3: peripherals to AXISRAM2 access */
+	rconf.base_sec = 0;
+	rconf.suba_cid = 0;
+	rconf.suba_sec = 0;
+	stm32n6_risaf_setup(&risaf3_sc, 2, &rconf);
+
+	/* RISAF4: peripherals to NPU access */
+	rconf.base_start = 0x70000000;
+	rconf.base_end = 0x78000000;
+	rconf.base_cid_write = 0xff;
+	rconf.base_cid_read = 0xff;
+	rconf.base_sec = 0;
+	rconf.suba_start = 0x70000000;
+	rconf.suba_end = 0x78000000;
+	rconf.suba_rd = 1;
+	rconf.suba_wr = 1;
+	rconf.suba_cid = 0; /* All peripherals */
+	rconf.suba_sec = 0;
+	stm32n6_risaf_setup(&risaf4_sc, 1, &rconf);
+	stm32n6_risaf_setup(&risaf5_sc, 1, &rconf);
+
+	rconf.base_start = 0x34100000;
+	rconf.base_end = 0x34500000;
+	rconf.base_cid_write = 0xff;
+	rconf.base_cid_read = 0xff;
+	rconf.base_sec = 0;
+	rconf.suba_start = 0x34100000;
+	rconf.suba_end = 0x34500000;
+	rconf.suba_rd = 1;
+	rconf.suba_wr = 1;
+	rconf.suba_cid = 0; /* All peripherals */
+	rconf.suba_sec = 0;
+	stm32n6_risaf_setup(&risaf4_sc, 2, &rconf);
+	stm32n6_risaf_setup(&risaf5_sc, 2, &rconf);
+
 	rconf.base_start = 0x90000000;
-	rconf.base_end = 0xa0000000;
+	rconf.base_end = 0x92000000;
 	rconf.base_cid_write = 0xff;
 	rconf.base_cid_read = 0xff;
 	rconf.base_sec = 0;
 	rconf.suba_start = 0x90000000;
-	rconf.suba_end = 0xa0000000;
+	rconf.suba_end = 0x92000000;
+	rconf.suba_rd = 1;
+	rconf.suba_wr = 1;
+	rconf.suba_cid = 0; /* All peripherals */
+	rconf.suba_sec = 0;
+	stm32n6_risaf_setup(&risaf4_sc, 3, &rconf);
+	stm32n6_risaf_setup(&risaf5_sc, 3, &rconf);
+
+	/* RISAF11: peripherals to XSPI1 access (32mb) */
+	rconf.base_start = 0x90000000;
+	rconf.base_end = 0x92000000;
+	rconf.base_cid_write = 0xff;
+	rconf.base_cid_read = 0xff;
+	rconf.base_sec = 0;
+	rconf.suba_start = 0x90000000;
+	rconf.suba_end = 0x92000000;
 	rconf.suba_rd = 1;
 	rconf.suba_wr = 1;
 	rconf.suba_cid = 0; /* All peripherals */
@@ -389,18 +478,41 @@ board_init(void)
 	rconf.suba_sec = 1;
 	stm32n6_risaf_setup(&risaf6_sc, 2, &rconf);
 
-	/* LTDC layer. */
-	info.width = 800;
-	info.height = 480;
-	info.hsync = 4;
-	info.vsync = 4;
-	info.vfp = 8;
-	info.hfp = 8;
-	info.vbp = 8;
-	info.hbp = 8;
-	info.bpp = 16;
-	info.base = 0x90000000; /* External PSRAM */
-	info.base = 0x34200000;	/* AXISRAM3 */
+	/* LTDC layer: main picture. */
+	info[0].width = 800;
+	info[0].width = 480;
+	info[0].height = 480;
+	info[0].hsync = 4;
+	info[0].vsync = 4;
+	info[0].vfp = 8;
+	info[0].hfp = 8;
+	info[0].vbp = 8;
+	info[0].hbp = 8;
+	info[0].bpp = 16;
+	info[0].base = 0x34200000; /* AXISRAM3 Pipe1 */
+	info[0].base = 0x91000000; /* External PSRAM */
+	info[0].alpha = 0xff;
+
+#if 0
+	info[0].height = 128;
+	info[0].width = 128;
+	info[0].bpp = 24;
+	info[0].base = 0x91200000;	/* AXISRAM5 Pipe2 */
+	info[0].base = 0x34200000;	/* AXISRAM5 Pipe2 */
+#endif
+
+	/* Layer 2: detection boxes. */
+	info[1].width = 480;
+	info[1].height = 480;
+	info[1].hsync = 4;
+	info[1].vsync = 4;
+	info[1].vfp = 8;
+	info[1].hfp = 8;
+	info[1].vbp = 8;
+	info[1].hbp = 8;
+	info[1].bpp = 16;
+	info[1].base = 0x91100000; /* External PSRAM */
+	info[1].alpha = 0x80;
 
 	pin_set(&gpio_sc, PORT_E,  1, 1); /* NRST */
 	pin_set(&gpio_sc, PORT_Q,  3, 1); /* LCD_ON/OFF */
@@ -408,7 +520,7 @@ board_init(void)
 	pin_set(&gpio_sc, PORT_G, 13, 1); /* LCD_DE */
 
 	stm32n6_ltdc_init(&ltdc_sc, LTDC_BASE);
-	stm32n6_ltdc_setup(&ltdc_sc, &info, 1);
+	stm32n6_ltdc_setup(&ltdc_sc, info, 2);
 
 	/* Reset & Enable camera module */
 	pin_set(&gpio_sc, PORT_C, 8, 0);
@@ -425,18 +537,61 @@ board_init(void)
 #define	IMX_WIDTH	2592
 #define	IMX_HEIGHT	1944
 
-	/* DCMIPP and CSI-2 */
-	struct stm32n6_dcmipp_downsize_config dconf;
-	dconf.hsize		= 800;
-	dconf.vsize		= 480;
-	dconf.hratio		= (IMX_WIDTH * 8192) / dconf.hsize;
-	dconf.vratio		= (IMX_HEIGHT * 8192) / dconf.vsize;
-	dconf.hdivfactor	= (1024 * 8192 - 1) / dconf.hratio;
-	dconf.vdivfactor	= (1024 * 8192 - 1) / dconf.vratio;
-
+	/* DCMIPP */
 	stm32n6_dcmipp_init(&dcmipp_sc, DCMIPP_BASE);
-	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, &dconf);
-	stm32n6_dcmipp_setup(&dcmipp_sc);
+
+	mdx_intc_setup(&dev_nvic, 48, stm32n6_dcmipp_intr, &dcmipp_sc);
+	mdx_intc_enable(&dev_nvic, 48);
+
+	struct stm32n6_dcmipp_downsize_config dconf;
+	dconf.hsize		= 480;
+	dconf.vsize		= 480;
+	dconf.hratio		= ((IMX_WIDTH - 1) * 8192) / (dconf.hsize - 1);
+	dconf.vratio		= ((IMX_HEIGHT- 1) * 8192) / (dconf.vsize - 1);
+	dconf.hdivfactor	= (1024 / (IMX_WIDTH / dconf.hsize));
+	dconf.vdivfactor	= (1024 / (IMX_HEIGHT / dconf.vsize));
+	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, 1, &dconf);
+
+	dconf.hsize		= 512;
+	dconf.vsize		= 512;
+	dconf.hratio		= ((IMX_WIDTH - 1) * 8192) / (dconf.hsize - 1);
+	dconf.vratio		= ((IMX_HEIGHT- 1) * 8192) / (dconf.vsize - 1);
+	dconf.hdivfactor	= (1024 / (IMX_WIDTH / dconf.hsize));
+	dconf.vdivfactor	= (1024 / (IMX_HEIGHT / dconf.vsize));
+	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, 2, &dconf);
+
+	struct stm32n6_dcmipp_pipe_config pconf;
+	pconf.pipe_id = 1;
+	pconf.pitch = 480 * 2;
+	pconf.gamma_en = 1;
+	pconf.vc = 0;
+	pconf.flow_type = DCMIPP_FLOW_TYPE_CONTINUOUS;
+	pconf.base_addr = 0x91000000; /* PSRAM */
+	pconf.format = DCMIPP_FORMAT_RGB565;
+	pconf.decimation = 0;
+	pconf.debayer = 1;
+	pconf.black_level_calibration = 1;
+	pconf.color_conv = 1;
+	pconf.exposure = 1;
+	pconf.dtida = IMX335_RAW10;
+	stm32n6_dcmipp_setup(&dcmipp_sc, &pconf);
+
+	pconf.pipe_id = 2;
+	pconf.pitch = 128 * 3;
+	pconf.gamma_en = 0;
+	pconf.vc = 0;
+	pconf.flow_type = DCMIPP_FLOW_TYPE_SNAPSHOT;
+	pconf.base_addr = 0x34200000;
+	pconf.format = DCMIPP_FORMAT_RGB888;
+	pconf.decimation = 1;
+	pconf.debayer = 0;
+	pconf.black_level_calibration = 0;
+	pconf.color_conv = 0;
+	pconf.exposure = 0;
+	pconf.dtida = IMX335_RAW10;
+	stm32n6_dcmipp_setup(&dcmipp_sc, &pconf);
+
+	/* CSI-2 */
 	stm32n6_csi_init(&csi_sc, CSI_BASE);
 
 #if 0
