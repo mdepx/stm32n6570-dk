@@ -117,6 +117,7 @@ yolox_process(uint32_t **inputs)
 	float lcd_ysize = 480;
 	uint32_t lcd_x0 = 0;
 
+	layer2_clear();
 	for (i = 0; i < pp_params.nb_detect; i++) {
 		printf("%s: x_center %.08f width %.08f\n", __func__,
 		    rois[i].x_center, rois[i].width);
