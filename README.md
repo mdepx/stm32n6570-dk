@@ -1,10 +1,12 @@
 # stm32n6570-dk
 
-This project aims to evaluate the Camera interface and NPU included into stm32n6 SoC from ST-Microelectronics.
+This project aims to evaluate the camera IP and NPU included into stm32n6 SoC from ST-Microelectronics.
 
-Current status: Display, PSRAM and Camera module initialized, no NPU yet in use.
+Current status: Peripherals initialized, the BlazeFace face detector model implemented.
 
-Enable developer mode by switching the BOOT1 jumper to the HIGH position.
+This project does not use STM32 HAL.
+
+This project runs directly from SRAM (no secure boot) which aim to ease development workflow. Enable developer mode by switching the BOOT1 jumper to the HIGH position.
 
 ### Set up compiler
     $ sudo apt install gcc-arm-none-eabi
