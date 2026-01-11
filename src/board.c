@@ -538,6 +538,11 @@ board_init(void)
 	mdx_intc_setup(&dev_nvic, 48, stm32n6_dcmipp_intr, &dcmipp_sc);
 	mdx_intc_enable(&dev_nvic, 48);
 
+	/*
+	 * Note: HW can only downsize to 1/8 of the original size.
+	 * If a further downsize needed, the decimation feature could be used.
+	 */
+
 	/* pipe1 rescale for display */
 	struct stm32n6_dcmipp_downsize_config dconf;
 	dconf.hsize		= 480;
