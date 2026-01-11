@@ -28,6 +28,8 @@
 #include <sys/thread.h>
 #include <sys/spinlock.h>
 
+#include <arm/stm/stm32n6_dcmipp.h>
+
 #include <lib/stnpu/ll_aton/ll_aton_runtime.h>
 #include <lib/stnpu/ll_aton/ll_aton_platform.h>
 
@@ -101,8 +103,6 @@ nn_pass(void)
 	LL_ATON_RT_Reset_Network(&NN_Instance_network);
 }
 
-void stm32n6_dcmipp_pipe2_frame_request(struct stm32n6_dcmipp_softc *, int p);
-
 int
 npu_test(void)
 {
@@ -129,7 +129,7 @@ npu_test(void)
 	printf("%s: nn in %p len %d\n", __func__, nn_in, nn_in_len);
 
 	while (1) {
-		stm32n6_dcmipp_pipe2_frame_request(&dcmipp_sc, 2);
+		stm32n6_dcmipp_capture_req(&dcmipp_sc, 2);
 
 		SCB_InvalidateDCache_by_Addr(nn_in, nn_in_len);
 
