@@ -508,9 +508,9 @@ board_init(void)
 	info[1].hfp = 8;
 	info[1].vbp = 8;
 	info[1].hbp = 8;
-	info[1].bpp = 16;
+	info[1].bpp = 32;
 	info[1].base = 0x91100000; /* External PSRAM */
-	info[1].alpha = 0x80;
+	info[1].alpha = 0xff;
 
 	pin_set(&gpio_sc, PORT_E,  1, 1); /* NRST */
 	pin_set(&gpio_sc, PORT_Q,  3, 1); /* LCD_ON/OFF */

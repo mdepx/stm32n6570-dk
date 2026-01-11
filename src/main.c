@@ -116,7 +116,7 @@ layer2_clear(void)
 {
 	int i;
 
-	for (i = 0; i < 480 * 480 * 2; i += 4)
+	for (i = 0; i < 480 * 480 * 4; i += 4)
 		*(uint32_t *)(0x91100000 + i) = 0;
 }
 
@@ -126,10 +126,10 @@ write_hline(int x, int y, int len)
 	uint32_t addr;
 	int i;
 
-	addr = (0x91100000 + (x * 2 + y * 480 * 2));
+	addr = (0x91100000 + (x * 4 + y * 480 * 4));
 
-	for (i = 0; i < len * 2; i += 2)
-		*(uint16_t *)(addr + i) = 0xffff;
+	for (i = 0; i < len * 4; i += 4)
+		*(uint32_t *)(addr + i) = 0xffdddddd;
 }
 
 void
@@ -138,10 +138,10 @@ write_vline(int x, int y, int len)
 	uint32_t addr;
 	int i;
 
-	addr = (0x91100000 + (x * 2 + y * 480 * 2));
+	addr = (0x91100000 + (x * 4 + y * 480 * 4));
 
-	for (i = 0; i < len * 480 * 2; i += 480 * 2)
-		*(uint16_t *)(addr + i) = 0xffff;
+	for (i = 0; i < len * 480 * 4; i += 480 * 4)
+		*(uint32_t *)(addr + i) = 0xffdddddd;
 }
 
 int mcu_cache_enable(void);
