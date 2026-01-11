@@ -54,6 +54,6 @@ static const float AI_OD_ST_YOLOX_PP_S_ANCHORS[2*AI_OD_ST_YOLOX_PP_NB_ANCHORS] =
 #define	AI_OD_ST_YOLOX_PP_MAX_BOXES_LIMIT	(100)
 
 int yolox_init(NN_Instance_TypeDef *);
-void yolox_process(uint32_t **);
+int yolox_process(uint32_t **);
 
 #endif /* !_SRC_YOLOX_H_ */

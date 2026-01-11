@@ -36,6 +36,7 @@
 #include "yolox.h"
 #include "npu.h"
 
+#define	dprintf(...)
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 static od_pp_outBuffer_t out_detections[
@@ -83,7 +84,7 @@ yolox_init(NN_Instance_TypeDef *NN_Instance)
 	return (error);
 }
 
-void
+int
 yolox_process(uint32_t **inputs)
 {
 	od_pp_outBuffer_t *rois;
@@ -92,7 +93,7 @@ yolox_process(uint32_t **inputs)
 	int i;
 
 	pp_output.pOutBuff = out_detections;
-	printf("%s\n", __func__);
+	dprintf("%s\n", __func__);
 
 	pp_params.nb_detect = 0;
 	od_st_yolox_pp_in_t pp_input = {
@@ -101,11 +102,11 @@ yolox_process(uint32_t **inputs)
 		.pRaw_detections_M = (uint32_t *)inputs[2],
 	};
 
-	printf("%s: S %x\n", __func__, pp_input.pRaw_detections_S);
-
 	error = od_st_yolox_pp_process_int8(&pp_input, &pp_output, &pp_params);
-	printf("%s: error %d nb_detect %d\n", __func__, error,
-	    pp_params.nb_detect);
+	if (error)
+		return (error);
+
+	dprintf("%s: nb_detect %d\n", __func__, pp_params.nb_detect);
 
 	rois = pp_output.pOutBuff;
 
@@ -121,7 +122,7 @@ yolox_process(uint32_t **inputs)
 	for (i = 0; i < pp_params.nb_detect; i++) {
 		if (rois[i].conf == 0)
 			continue;
-		printf("%s: x_center %.08f width %.08f\n", __func__,
+		dprintf("%s: x_center %.08f width %.08f\n", __func__,
 		    rois[i].x_center, rois[i].width);
 		x0 = (uint32_t) ((rois[i].x_center - rois[i].width / 2) *
 		    lcd_xsize) + lcd_x0;
@@ -129,7 +130,7 @@ yolox_process(uint32_t **inputs)
 		    lcd_ysize);
 		width = (uint32_t) (rois[i].width * lcd_xsize);
 		height = (uint32_t) (rois[i].height * lcd_ysize);
-		printf("Box%d: %d x %d, %d %d\n", i, x0, y0, width, height);
+		dprintf("Box%d: %d x %d, %d %d\n", i, x0, y0, width, height);
 		if (width == 0 || height == 0)
 			continue;
 		write_hline(x0, y0, width);
@@ -137,4 +138,6 @@ yolox_process(uint32_t **inputs)
 		write_vline(x0, y0, height);
 		write_vline(x0 + width, y0, height);
 	}
+
+	return (0);
 }
