@@ -538,6 +538,7 @@ board_init(void)
 	mdx_intc_setup(&dev_nvic, 48, stm32n6_dcmipp_intr, &dcmipp_sc);
 	mdx_intc_enable(&dev_nvic, 48);
 
+	/* pipe1 rescale for display */
 	struct stm32n6_dcmipp_downsize_config dconf;
 	dconf.hsize		= 480;
 	dconf.vsize		= 480;
@@ -547,6 +548,7 @@ board_init(void)
 	dconf.vdivfactor	= (1024 / (IMX_HEIGHT / dconf.vsize));
 	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, 1, &dconf);
 
+	/* pipe2 rescale for NPU */
 	dconf.hsize		= 480;
 	dconf.vsize		= 480;
 	dconf.hratio		= ((IMX_WIDTH - 1) * 8192) / (dconf.hsize - 1);
@@ -555,6 +557,7 @@ board_init(void)
 	dconf.vdivfactor	= (1024 / (IMX_HEIGHT / dconf.vsize));
 	stm32n6_dcmipp_setup_downsize(&dcmipp_sc, 2, &dconf);
 
+	/* pipe1: display */
 	struct stm32n6_dcmipp_pipe_config pconf;
 	pconf.pipe_id = 1;
 	pconf.pitch = 480 * 2;
@@ -571,6 +574,7 @@ board_init(void)
 	pconf.dtida = IMX335_RAW10;
 	stm32n6_dcmipp_setup(&dcmipp_sc, &pconf);
 
+	/* pipe2: NPU */
 	pconf.pipe_id = 2;
 	pconf.pitch = 480 * 3;
 	pconf.gamma_en = 0;
