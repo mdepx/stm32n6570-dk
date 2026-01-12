@@ -122,10 +122,8 @@ npu_test(void)
 	blazeface_init(&NN_Instance_network);
 #endif
 
-	LL_ATON_Set_User_Input_Buffer_network(0, (void *)0x34200000,
-	    nn_in_len);
 	nn_in = (void *)0x34200000;
-
+	LL_ATON_Set_User_Input_Buffer_network(0, nn_in, nn_in_len);
 	printf("%s: nn in %p len %d\n", __func__, nn_in, nn_in_len);
 
 	while (1) {
