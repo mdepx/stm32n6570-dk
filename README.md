@@ -27,5 +27,5 @@ NPU input picture: 480x480x3 on Pipe2.
 ### Place the binary into SRAM and run
     $ make run
 
-![n6dk](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/yolox.jpg)
+![n6dk](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/ai.gif)
 ![n6dk dev mode](https://raw.githubusercontent.com/mdepx/stm32n6570-dk/main/images/n6dk_devmode.jpg)
